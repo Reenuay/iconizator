@@ -23,6 +23,8 @@ function createWindow() {
         height: 600
     });
 
+    win.setMenu(null);
+
     if (isDevelopment || process.env.IS_TEST) {
         // Load the url of the dev server if in development mode
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);

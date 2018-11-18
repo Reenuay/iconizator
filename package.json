@@ -13,7 +13,9 @@
     "dependencies": {
         "bootstrap-vue": "^2.0.0-rc.11",
         "vue": "^2.5.17",
+        "vue-color": "^2.7.0",
         "vue-router": "^3.0.1",
+        "vue-swatches": "^1.0.2",
         "vuex": "^3.0.1"
     },
     "devDependencies": {
