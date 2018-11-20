@@ -98,7 +98,7 @@
             <b-row>
                 <b-col md="8" offset-md="2" class="mb-3 text-center">
                     <hr>
-                    <h3>PROGRESS</h3>
+                    <h4 class="mb-3">ICONIZATOR</h4>
                     <b-btn variant="danger">Stop</b-btn>
                 </b-col>
             </b-row>
@@ -106,6 +106,39 @@
                 <b-col md="8" offset-md="2">
                     <b-progress :value="45"
                         :max="100"
+                        show-progress
+                        animated>
+                    </b-progress>
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col md="8" offset-md="2" class="text-center">
+                    <hr>
+                    <h4 class="mb-3">KEYWORDER</h4>
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col md="8" offset-md="2">
+                    <b-form-group label="Icons Folder Path:"
+                        label-cols="2"
+                        breakpoint="md"
+                        horizontal>
+                        <b-form-file placeholder="Choose a folder with icons..."
+                            directory>
+                        </b-form-file>
+                    </b-form-group>
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col md="8" offset-md="2" class="text-center mb-3">
+                    <b-btn variant="danger">Stop</b-btn>
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col md="8" offset-md="2">
+                    <b-progress :value="30"
+                        :max="100"
+                        variant="success"
                         show-progress
                         animated>
                     </b-progress>
