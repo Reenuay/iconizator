@@ -1,10 +1,15 @@
 "use strict";
 
-import { app, protocol, BrowserWindow } from "electron";
+import fs from "fs";
+import path from "path";
+import Mustache from "mustache";
+import { execFile as child } from "child_process";
+import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import {
     createProtocol,
     installVueDevtools
 } from "vue-cli-plugin-electron-builder/lib";
+
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -66,6 +71,50 @@ app.on("ready", async () => {
         await installVueDevtools();
     }
     createWindow();
+});
+
+ipcMain.on("startProcessing", (e, data) => {
+    const template = fs.readFileSync(
+        path.join(".", "script.template.js"),
+        "utf8"
+    );
+
+    const now = new Date(Date.now());
+
+    console.log(now);
+
+    const processedFolder = path.join(".", "processed");
+
+    if (!fs.existsSync(processedFolder)) fs.mkdirSync(processedFolder);
+
+    const saveFolder = path.resolve(
+        path.join(
+            processedFolder,
+            `${now.getDay()}_${now.getMonth()}_${now.getFullYear()} ${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}`
+        )
+    );
+
+    fs.mkdirSync(saveFolder);
+
+    win.send("saveFolderCreated", saveFolder);
+
+    const content = Mustache.render(template, {
+        backgroundPath: data.backgroundPath.replace(/\\/g, "\\\\"),
+        iconsFolder: data.iconsFolder.replace(/\\/g, "\\\\"),
+        iconSize: data.iconSize,
+        color: data.color,
+
+        saveFolder: saveFolder.replace(/\\/g, "\\\\")
+    });
+
+    const scriptPath = path.resolve(path.join(".", "script.js"));
+
+    fs.writeFileSync(scriptPath, content);
+
+    child(data.illustrator, [scriptPath], function(err, data) {
+        console.log(err);
+        console.log(data.toString());
+    });
 });
 
 // Exit cleanly on request from parent process in development mode.

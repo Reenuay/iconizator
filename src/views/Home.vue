@@ -4,47 +4,71 @@
             <b-navbar-brand>Iconizator</b-navbar-brand>
         </b-navbar>
         <b-container class="my-3" fluid>
+            <b-row>
+                <b-col md="8" offset-md="2" class="text-center">
+                    <h4 class="mb-3">ICONIZATOR</h4>
+                </b-col>
+            </b-row>
             <b-row align-v="center">
                 <b-col md="8" offset-md="2">
                     <b-form-group label="Icons Folder Path:"
                         label-cols="2"
                         breakpoint="md"
                         horizontal>
-                        <b-form-file placeholder="Choose a folder with icons..."
-                            directory>
-                        </b-form-file>
+                        <div>
+                            <span>
+                                {{
+                                    iconizatorIconsFolder
+                                        ? iconizatorIconsFolder
+                                        : 'Choose a folder with icons...'
+                                }}
+                            </span>
+                            <b-btn @click="openDialog('iconizatorIconsFolder', 'folder')"
+                                class="ml-3 float-right">
+                                Browse
+                            </b-btn>
+                        </div>
                     </b-form-group>
                     <b-form-group label="Background Path:"
                         label-cols="2"
                         breakpoint="md"
                         description="Preferred size 500x500 mm"
                         horizontal>
-                        <b-form-file placeholder="Choose a vector file...">
-                        </b-form-file>
+                        <div>
+                            <span>
+                                {{background ? background : 'Choose a vector file...'}}
+                            </span>
+                            <b-btn @click="openDialog('background', 'file', [{name: 'vector', extensions:['svg', 'ai', 'eps']}])"
+                                class="ml-3 float-right">
+                                Browse
+                            </b-btn>
+                        </div>
                     </b-form-group>
                     <b-form-group label="Illustrator Path:"
                         label-cols="2"
                         breakpoint="md"
                         horizontal>
-                        <b-form-file placeholder="Path to Illustrator.exe...">
-                        </b-form-file>
-                    </b-form-group>
-                    <b-form-group label="Title:"
-                        label-cols="2"
-                        breakpoint="md"
-                        horizontal>
-                        <b-form-input placeholder="Title">
-                        </b-form-input>
+                        <div>
+                            <span>
+                                {{illustrator ? illustrator : 'Path to Illustrator.exe...'}}
+                            </span>
+                            <b-btn @click="openDialog('illustrator', 'file', [{name: 'exe', extensions:['exe']}])"
+                                class="ml-3 float-right">
+                                Browse
+                            </b-btn>
+                        </div>
                     </b-form-group>
                     <b-form-group label="Icon size:"
                         label-cols="2"
                         breakpoint="md"
-                        description="Maximum 500 mm"
+                        description="Maximum 1000 mm"
                         horizontal>
                         <b-form-input placeholder="Icon size in mm"
                             type="number"
                             min="1"
-                            max="500">
+                            max="1000"
+                            :state="iconSizeIsCorrect"
+                            v-model="iconSize">
                         </b-form-input>
                     </b-form-group>
                     <b-form-group label="Icon color:"
@@ -62,6 +86,10 @@
                                 id="color-button"
                                 :disabled="popoverShow">
                                 Pick a color
+                            </b-btn>
+                            <b-btn class="ml-1"
+                                variant="danger">
+                                Remove
                             </b-btn>
                         </div>
                     </b-form-group>
@@ -96,16 +124,19 @@
                 </b-col>
             </b-row>
             <b-row>
-                <b-col md="8" offset-md="2" class="mb-3 text-center">
-                    <hr>
-                    <h4 class="mb-3">ICONIZATOR</h4>
-                    <b-btn variant="danger">Stop</b-btn>
+                <b-col md="8" offset-md="2" class="mb-3">
+                    <b-btn :disabled="!iconizatorIsReady"
+                        :variant="iconizatorIsProcessing ? 'danger' : 'primary'"
+                        @click="startProcessing()"
+                        class="float-right">
+                        {{iconizatorIsProcessing ? 'Stop' : 'Start'}}
+                    </b-btn>
                 </b-col>
             </b-row>
-            <b-row>
+            <b-row v-if="iconizatorIsProcessing">
                 <b-col md="8" offset-md="2">
-                    <b-progress :value="45"
-                        :max="100"
+                    <b-progress :value="iconizatorProgress"
+                        :max="iconizatorMaxProgress"
                         show-progress
                         animated>
                     </b-progress>
@@ -123,21 +154,41 @@
                         label-cols="2"
                         breakpoint="md"
                         horizontal>
-                        <b-form-file placeholder="Choose a folder with icons..."
-                            directory>
-                        </b-form-file>
+                        <div>
+                            <span>
+                                {{
+                                    keyworderIconsFolder
+                                        ? keyworderIconsFolder
+                                        : 'Choose a folder with icons...'
+                                }}
+                            </span>
+                            <b-btn @click="openDialog('keyworderIconsFolder', 'folder')"
+                                class="ml-3 float-right">
+                                Browse
+                            </b-btn>
+                        </div>
+                    </b-form-group>
+                    <b-form-group label="Title:"
+                        label-cols="2"
+                        breakpoint="md"
+                        horizontal>
+                        <b-form-input v-model="title" placeholder="Title">
+                        </b-form-input>
                     </b-form-group>
                 </b-col>
             </b-row>
             <b-row>
                 <b-col md="8" offset-md="2" class="text-center mb-3">
-                    <b-btn variant="danger">Stop</b-btn>
+                    <b-btn :variant="keyworderIsProcessing ? 'danger' : 'primary'"
+                        class="float-right">
+                        {{keyworderIsProcessing ? 'Stop' : 'Start'}}
+                    </b-btn>
                 </b-col>
             </b-row>
-            <b-row>
+            <b-row v-if="keyworderIsProcessing">
                 <b-col md="8" offset-md="2">
-                    <b-progress :value="30"
-                        :max="100"
+                    <b-progress :value="keyworderProgress"
+                        :max="keyworderMaxProgress"
                         variant="success"
                         show-progress
                         animated>
@@ -148,34 +199,5 @@
     </div>
 </template>
 
-<script>
-import { Chrome } from "vue-color";
-import Swatches from "vue-swatches";
-import "vue-swatches/dist/vue-swatches.min.css";
-
-export default {
-    components: {
-        "chrome-picker": Chrome,
-        swatches: Swatches
-    },
-    data() {
-        return {
-            color: { hex: "#000000" },
-            selectedColor: "#000000",
-            swatches: ["#FF0000", "#00FF00", "#0000FF", "#000000"],
-            popoverShow: false
-        };
-    },
-    methods: {
-        onOk() {
-            this.popoverShow = false;
-        },
-        onAdd() {
-            if (!this.swatches.includes(this.color.hex)) {
-                this.swatches.push(this.color.hex);
-                this.selectedColor = this.color.hex;
-            }
-        }
-    }
-};
+<script src="./home.js">
 </script>
