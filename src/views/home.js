@@ -26,6 +26,7 @@ export default {
             illustrator: undefined,
             background: undefined,
             iconizatorProgress: 0,
+            processingStop: false,
             keyworderProgress: 0,
             popoverShow: false,
             iconSize: 800,
@@ -57,7 +58,7 @@ export default {
                 this.selectedColor = this.color.hex;
             }
         },
-        startProcessing() {
+        switchProcessing(userInit = false) {
             if (!this.iconizatorIsProcessing) {
                 this.iconizatorIsProcessing = true;
 
@@ -70,7 +71,10 @@ export default {
                 });
             } else {
                 this.iconizatorIsProcessing = false;
-                ipcRenderer.send("stopProcessing");
+                this.iconizatorProgress = 0;
+                this.iconizatorMaxProgress = 0;
+                this.processingStop = false;
+                ipcRenderer.send("stopProcessing", userInit);
             }
         },
         openDialog(prop, mode, filters = []) {
@@ -118,6 +122,24 @@ export default {
 
         ipcRenderer.on("saveFolderCreated", (event, path) => {
             this.keyworderIconsFolder = path;
+        });
+
+        ipcRenderer.on("iconizatorProgressChanged", (event, progress) => {
+            const values = progress.split("-");
+
+            this.iconizatorProgress = parseInt(values[0], 10);
+            this.iconizatorMaxProgress = parseInt(values[1], 10);
+
+            if (
+                this.iconizatorIsProcessing &&
+                !this.processingStop &&
+                values[0] === values[1]
+            ) {
+                this.processingStop = true;
+                setTimeout(() => {
+                    this.switchProcessing();
+                }, 2000);
+            }
         });
     }
 };

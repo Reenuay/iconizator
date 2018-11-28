@@ -70,7 +70,11 @@ background.left = (targetDoc.width - background.width) / 2;
 // Process all icons
 var files = (new Folder(iconsFolder)).getFiles(checkFile);
 
+writeProgress(0, files.length);
+
 for (var index in files) {
+
+    if (checkMediator()) break;
 
     // Create icon object on artboard
     var file = files[index];
@@ -127,6 +131,9 @@ for (var index in files) {
 
     // Remove icon from artboard
     icon.remove();
+
+    // Report progress
+    writeProgress(parseInt(index, 10) + 1 , files.length);
 }
 
 // Close document
@@ -178,4 +185,21 @@ function setColor(el, newColor) {
         default:
             break;
     }
+}
+
+function writeProgress(current, max) {
+    var file = new File("{{progressFile}}");
+    if (file.open("w")) {
+        file.write(current + "-" + max);
+        file.close();
+    }
+}
+
+function checkMediator() {
+    var file = new File("{{mediatorFile}}");
+    if (file.open("r")) {
+        var content = file.read();
+        return content.length > 0;
+    }
+    return false;
 }

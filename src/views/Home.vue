@@ -127,7 +127,7 @@
                 <b-col md="8" offset-md="2" class="mb-3">
                     <b-btn :disabled="!iconizatorIsReady"
                         :variant="iconizatorIsProcessing ? 'danger' : 'primary'"
-                        @click="startProcessing()"
+                        @click="switchProcessing(true)"
                         class="float-right">
                         {{iconizatorIsProcessing ? 'Stop' : 'Start'}}
                     </b-btn>
@@ -135,10 +135,16 @@
             </b-row>
             <b-row v-if="iconizatorIsProcessing">
                 <b-col md="8" offset-md="2">
-                    <b-progress :value="iconizatorProgress"
-                        :max="iconizatorMaxProgress"
-                        show-progress
-                        animated>
+                    <b-progress :max="iconizatorMaxProgress"
+                        animated
+                        striped>
+                        <b-progress-bar :value="iconizatorProgress"
+                            :label="
+                                iconizatorMaxProgress > 0 && iconizatorProgress > 0
+                                    ? iconizatorProgress + '/' + iconizatorMaxProgress
+                                    : ''
+                            ">
+                        </b-progress-bar>
                     </b-progress>
                 </b-col>
             </b-row>

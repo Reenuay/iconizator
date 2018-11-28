@@ -26,3 +26,5 @@ yarn-error.log*
 # Program generated
 /processed
 script.js
+progress.txt
+mediator.txt

@@ -3,6 +3,7 @@
 import fs from "fs";
 import path from "path";
 import Mustache from "mustache";
+import chokidar from "chokidar";
 import { execFile as child } from "child_process";
 import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import {
@@ -15,6 +16,12 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
+
+// File system watcher.
+let watcher;
+
+// Mediator file
+const mediatorFile = path.resolve(path.join(".", "mediator.txt"));
 
 // Standard scheme must be registered before the app is ready
 protocol.registerStandardSchemes(["app"], {
@@ -74,15 +81,11 @@ app.on("ready", async () => {
 });
 
 ipcMain.on("startProcessing", (e, data) => {
-    const template = fs.readFileSync(
-        path.join(".", "script.template.js"),
-        "utf8"
-    );
+    // Clean mediator
+    fs.writeFileSync(mediatorFile, "");
 
+    // Save folder
     const now = new Date(Date.now());
-
-    console.log(now);
-
     const processedFolder = path.join(".", "processed");
 
     if (!fs.existsSync(processedFolder)) fs.mkdirSync(processedFolder);
@@ -98,23 +101,55 @@ ipcMain.on("startProcessing", (e, data) => {
 
     win.send("saveFolderCreated", saveFolder);
 
+    // Progress file
+    const progressFile = path.resolve(path.join(".", "progress.txt"));
+
+    if (!fs.existsSync(progressFile)) fs.writeFile(progressFile, "");
+
+    watcher = chokidar.watch("./progress.txt", {
+        awaitWriteFinish: true
+    });
+
+    watcher.on("change", path => {
+        const progress = fs.readFileSync(path, "utf8");
+        if (progress !== "") win.send("iconizatorProgressChanged", progress);
+    });
+
+    // Create script
+    const template = fs.readFileSync(
+        path.join(".", "script.template.js"),
+        "utf8"
+    );
+
     const content = Mustache.render(template, {
         backgroundPath: data.backgroundPath.replace(/\\/g, "\\\\"),
         iconsFolder: data.iconsFolder.replace(/\\/g, "\\\\"),
         iconSize: data.iconSize,
         color: data.color,
 
-        saveFolder: saveFolder.replace(/\\/g, "\\\\")
+        saveFolder: saveFolder.replace(/\\/g, "\\\\"),
+        progressFile: progressFile.replace(/\\/g, "\\\\"),
+        mediatorFile: mediatorFile.replace(/\\/g, "\\\\")
     });
 
     const scriptPath = path.resolve(path.join(".", "script.js"));
 
     fs.writeFileSync(scriptPath, content);
 
+    // Start Illustrator
     child(data.illustrator, [scriptPath], function(err, data) {
         console.log(err);
         console.log(data.toString());
     });
+});
+
+ipcMain.on("stopProcessing", (e, userInit) => {
+    if (userInit) fs.writeFileSync(mediatorFile, "stop");
+
+    if (watcher) {
+        watcher.close();
+        watcher = undefined;
+    }
 });
 
 // Exit cleanly on request from parent process in development mode.
