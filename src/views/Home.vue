@@ -88,7 +88,9 @@
                                 Pick a color
                             </b-btn>
                             <b-btn class="ml-1"
-                                variant="danger">
+                                variant="danger"
+                                :disabled="!Boolean(selectedColor)"
+                                @click="removeSwatch()">
                                 Remove
                             </b-btn>
                         </div>
@@ -185,7 +187,9 @@
             </b-row>
             <b-row>
                 <b-col md="8" offset-md="2" class="text-center mb-3">
-                    <b-btn :variant="keyworderIsProcessing ? 'danger' : 'primary'"
+                    <b-btn :disabled="!keyworderIsReady"
+                        :variant="keyworderIsProcessing ? 'danger' : 'primary'"
+                        @click="switchKeywording()"
                         class="float-right">
                         {{keyworderIsProcessing ? 'Stop' : 'Start'}}
                     </b-btn>
@@ -193,11 +197,17 @@
             </b-row>
             <b-row v-if="keyworderIsProcessing">
                 <b-col md="8" offset-md="2">
-                    <b-progress :value="keyworderProgress"
-                        :max="keyworderMaxProgress"
-                        variant="success"
-                        show-progress
-                        animated>
+                    <b-progress :max="keyworderMaxProgress"
+                        animated
+                        striped>
+                        <b-progress-bar :value="keyworderProgress"
+                            variant="success"
+                            :label="
+                                keyworderMaxProgress > 0 && keyworderProgress > 0
+                                    ? keyworderProgress + '/' + keyworderMaxProgress
+                                    : ''
+                            ">
+                        </b-progress-bar>
                     </b-progress>
                 </b-col>
             </b-row>

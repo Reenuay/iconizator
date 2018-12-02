@@ -24,9 +24,10 @@ export default {
             iconizatorMaxProgress: 0,
             keyworderMaxProgress: 0,
             illustrator: undefined,
-            background: undefined,
+            keywordingStop: false,
             iconizatorProgress: 0,
             processingStop: false,
+            background: undefined,
             keyworderProgress: 0,
             popoverShow: false,
             iconSize: 800,
@@ -46,6 +47,9 @@ export default {
         },
         iconSizeIsCorrect() {
             return this.iconSize > 0 && this.iconSize <= 1000;
+        },
+        keyworderIsReady() {
+            return this.keyworderIconsFolder !== undefined && this.title !== "";
         }
     },
     methods: {
@@ -77,6 +81,22 @@ export default {
                 ipcRenderer.send("stopProcessing", userInit);
             }
         },
+        switchKeywording() {
+            if (!this.keyworderIsProcessing) {
+                this.keyworderIsProcessing = true;
+
+                ipcRenderer.send("startKeywording", {
+                    iconsFolder: this.keyworderIconsFolder,
+                    title: this.title
+                });
+            } else {
+                this.keyworderIsProcessing = false;
+                this.keyworderProgress = 0;
+                this.keyworderMaxProgress = 0;
+                this.keywordingStop = false;
+                ipcRenderer.send("stopKeywording");
+            }
+        },
         openDialog(prop, mode, filters = []) {
             const value = dialog.showOpenDialog({
                 properties: [mode === "file" ? "openFile" : "openDirectory"],
@@ -84,6 +104,15 @@ export default {
             });
 
             if (value) this[prop] = value[0];
+        },
+        removeSwatch() {
+            if (this.selectedColor !== undefined) {
+                var index = this.swatches.indexOf(this.selectedColor);
+                if (index > -1) {
+                    this.swatches.splice(index);
+                    this.selectedColor = undefined;
+                }
+            }
         }
     },
     watch: {
@@ -138,6 +167,22 @@ export default {
                 this.processingStop = true;
                 setTimeout(() => {
                     this.switchProcessing();
+                }, 2000);
+            }
+        });
+
+        ipcRenderer.on("keyworderProgressChanged", (event, data) => {
+            this.keyworderProgress = data.progress;
+            this.keyworderMaxProgress = data.maxProgress;
+
+            if (
+                this.keyworderIsProcessing &&
+                !this.keywordingStop &&
+                data.progress === data.maxProgress
+            ) {
+                this.keywordingStop = true;
+                setTimeout(() => {
+                    this.switchKeywording();
                 }, 2000);
             }
         });

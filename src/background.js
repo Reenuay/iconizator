@@ -4,6 +4,10 @@ import fs from "fs";
 import path from "path";
 import Mustache from "mustache";
 import chokidar from "chokidar";
+import axios from "axios";
+import cheerio from "cheerio";
+import exiftool from "node-exiftool";
+import querystring from "querystring";
 import { execFile as child } from "child_process";
 import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import {
@@ -22,6 +26,9 @@ let watcher;
 
 // Mediator file
 const mediatorFile = path.resolve(path.join(".", "mediator.txt"));
+
+// Mediator variable
+let stopKeywording = false;
 
 // Standard scheme must be registered before the app is ready
 protocol.registerStandardSchemes(["app"], {
@@ -150,6 +157,159 @@ ipcMain.on("stopProcessing", (e, userInit) => {
         watcher.close();
         watcher = undefined;
     }
+});
+
+ipcMain.on("startKeywording", async (e, data) => {
+    stopKeywording = false;
+
+    const extension = /\..+$/gi;
+    const nonLatin = /[^a-zA-Z]+/gi;
+    const multipleSpaces = /\s+/gi;
+    const url = "http://microstockgroup.com/tools/keyword.php";
+
+    let keywords = {};
+    let progress = 0;
+    let maxProgress = 0;
+
+    for (let file of fs.readdirSync(data.iconsFolder)) {
+        if (!file.match(/\.jpe?g$/i)) continue;
+
+        const cleaned = file
+            .replace(extension, "")
+            .replace(nonLatin, " ")
+            .replace(multipleSpaces, " ")
+            .trim();
+
+        // Cleaned is empty
+        if (cleaned.match(/^\s*$/gi)) continue;
+
+        if (keywords.hasOwnProperty(cleaned)) {
+            keywords[cleaned].push(file);
+        } else {
+            keywords[cleaned] = [file];
+        }
+
+        maxProgress++;
+    }
+
+    win.send("keyworderProgressChanged", {
+        progress: progress,
+        maxProgress: maxProgress
+    });
+
+    const ep = new exiftool.ExiftoolProcess(
+        process.platform === "win32"
+            ? path.resolve(
+                  path.join(
+                      "node_modules",
+                      "exiftool.exe",
+                      "vendor",
+                      "exiftool.exe"
+                  )
+              )
+            : path.resolve(
+                  path.join("node_modules", "exiftool.pl", "vendor", "exiftool")
+              )
+    );
+
+    if (await ep.open()) {
+        for (const keyword in keywords) {
+            if (stopKeywording) break;
+
+            // Get pictures
+            let res = await axios.post(
+                url,
+                querystring.stringify({
+                    search_term: keyword,
+                    image_type: "photo",
+                    language: "en",
+                    num_results: 10,
+                    only_models: "on"
+                }),
+                {
+                    headers: {
+                        "content-type": "application/x-www-form-urlencoded"
+                    }
+                }
+            );
+
+            if (stopKeywording) break;
+
+            // Parse them
+            let $ = cheerio.load(res.data);
+            const imgIds = [];
+
+            $(".singleCell img").each((i, img) => {
+                imgIds.push($(img).attr("id"));
+            });
+
+            // Get keywords
+            res = await axios.post(
+                url,
+                querystring.stringify({
+                    "imageid[]": imgIds
+                }),
+                {
+                    headers: {
+                        "content-type": "application/x-www-form-urlencoded"
+                    }
+                }
+            );
+
+            // Parse them
+            $ = cheerio.load(res.data);
+            let keywordArray = [];
+
+            $(".keywordDisplay").each((i, el) => {
+                keywordArray.push($(el).attr("id"));
+            });
+
+            // Create meta
+            const req = [keyword, "icon", "illustration", "vector"];
+
+            keywordArray = req.concat(
+                keywordArray
+                    .filter((v, i, a) => a.indexOf(v) === i && !req.includes(v))
+                    .slice(0, 50 - req.length)
+            );
+
+            const title = Mustache.render(data.title, {
+                i: keyword,
+                ic: keyword[0].toUpperCase() + keyword.slice(1)
+            });
+
+            // Write it
+            for (const index in keywords[keyword]) {
+                if (stopKeywording) break;
+
+                const filePath = path.join(
+                    data.iconsFolder,
+                    keywords[keyword][index]
+                );
+
+                ep.writeMetadata(
+                    filePath,
+                    {
+                        Keywords: keywordArray,
+                        Title: title,
+                        Description: title
+                    },
+                    ["overwrite_original"]
+                );
+
+                win.send("keyworderProgressChanged", {
+                    progress: ++progress,
+                    maxProgress: maxProgress
+                });
+            }
+        }
+    }
+
+    ep.close();
+});
+
+ipcMain.on("stopKeywording", () => {
+    stopKeywording = true;
 });
 
 // Exit cleanly on request from parent process in development mode.
