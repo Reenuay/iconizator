@@ -12,6 +12,15 @@
       <strong>We're sorry but iconizator doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
     <div id="app"></div>
+    <script>
+        document.addEventListener("keydown", function (e) {
+            if (e.which === 123) {
+                require('electron').remote.getCurrentWindow().toggleDevTools();
+            } else if (e.which === 116) {
+                location.reload();
+            }
+        });
+    </script>
     <!-- built files will be auto injected -->
   </body>
 </html>

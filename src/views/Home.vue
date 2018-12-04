@@ -44,6 +44,24 @@
                             </b-btn>
                         </div>
                     </b-form-group>
+                    <b-form-group label="Save Folder Path:"
+                        label-cols="2"
+                        breakpoint="md"
+                        horizontal>
+                        <div>
+                            <span>
+                                {{
+                                    processedFolder
+                                        ? processedFolder
+                                        : 'Save to...'
+                                }}
+                            </span>
+                            <b-btn @click="openDialog('processedFolder', 'folder')"
+                                class="ml-3 float-right">
+                                Browse
+                            </b-btn>
+                        </div>
+                    </b-form-group>
                     <b-form-group label="Illustrator Path:"
                         label-cols="2"
                         breakpoint="md"

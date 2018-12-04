@@ -104,9 +104,9 @@ for (var index in files) {
     clipScan(targetDoc);
 
     // Create file names
-    var fileName = file.name.replace(/\.[a-z]$/, "");
-    var epsName = pathJoin(saveFolder, fileName.replace(/\..+$/, "") + ".eps");
-    var jpegName = pathJoin(saveFolder, fileName.replace(/\..+$/, "") + ".jpeg");
+    var fileName = file.name.replace(/\.[a-z]*$/g, "").replace(/(\(|\))/g, "_");
+    var epsName = pathJoin(saveFolder, fileName + ".eps");
+    var jpegName = pathJoin(saveFolder, fileName + ".jpeg");
 
     // Save eps file
     var saveOptions = new EPSSaveOptions();

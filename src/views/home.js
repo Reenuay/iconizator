@@ -19,6 +19,7 @@ export default {
             keyworderIconsFolder: undefined,
             iconizatorIsProcessing: false,
             keyworderIsProcessing: false,
+            processedFolder: undefined,
             color: { hex: "#000000" },
             selectedColor: undefined,
             iconizatorMaxProgress: 0,
@@ -41,6 +42,7 @@ export default {
                 this.iconSizeIsCorrect &&
                 this.background !== undefined &&
                 this.illustrator !== undefined &&
+                this.processedFolder !== undefined &&
                 this.selectedColor !== undefined &&
                 this.iconizatorIconsFolder !== undefined
             );
@@ -69,6 +71,7 @@ export default {
                 ipcRenderer.send("startProcessing", {
                     backgroundPath: this.background,
                     iconsFolder: this.iconizatorIconsFolder,
+                    processedFolder: this.processedFolder,
                     illustrator: this.illustrator,
                     iconSize: this.iconSize,
                     color: this.selectedColor
@@ -124,6 +127,10 @@ export default {
             storage.set("iconSize", value);
         },
 
+        processedFolder(value) {
+            storage.set("processedFolder", value);
+        },
+
         swatches(value) {
             storage.set("swatches", value);
         },
@@ -141,8 +148,12 @@ export default {
             this.iconSize = typeof data === "string" ? data : "800";
         });
 
+        storage.get("processedFolder", (error, data) => {
+            if (typeof data === "string") this.processedFolder = data;
+        });
+
         storage.get("swatches", (error, data) => {
-            if (typeof data === "object") this.swatches = data;
+            if (data instanceof Array) this.swatches = data;
         });
 
         storage.get("title", (error, data) => {
@@ -185,6 +196,10 @@ export default {
                     this.switchKeywording();
                 }, 2000);
             }
+        });
+
+        ipcRenderer.on("alert", (event, data) => {
+            alert(data);
         });
     }
 };

@@ -93,13 +93,13 @@ ipcMain.on("startProcessing", (e, data) => {
 
     // Save folder
     const now = new Date(Date.now());
-    const processedFolder = path.join(".", "processed");
 
-    if (!fs.existsSync(processedFolder)) fs.mkdirSync(processedFolder);
+    if (!fs.existsSync(data.processedFolder))
+        fs.mkdirSync(data.processedFolder);
 
     const saveFolder = path.resolve(
         path.join(
-            processedFolder,
+            data.processedFolder,
             `${now.getDay()}_${now.getMonth()}_${now.getFullYear()} ${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}`
         )
     );
@@ -124,7 +124,7 @@ ipcMain.on("startProcessing", (e, data) => {
 
     // Create script
     const template = fs.readFileSync(
-        path.join(".", "script.template.js"),
+        path.resolve(path.join(__static, "script.template.js")), // eslint-disable-line no-undef
         "utf8"
     );
 
@@ -197,20 +197,9 @@ ipcMain.on("startKeywording", async (e, data) => {
         maxProgress: maxProgress
     });
 
-    const ep = new exiftool.ExiftoolProcess(
-        process.platform === "win32"
-            ? path.resolve(
-                  path.join(
-                      "node_modules",
-                      "exiftool.exe",
-                      "vendor",
-                      "exiftool.exe"
-                  )
-              )
-            : path.resolve(
-                  path.join("node_modules", "exiftool.pl", "vendor", "exiftool")
-              )
-    );
+    const exiftoolBin = path.resolve(path.join(".", "exiftool.exe"));
+
+    const ep = new exiftool.ExiftoolProcess(exiftoolBin);
 
     if (await ep.open()) {
         for (const keyword in keywords) {
