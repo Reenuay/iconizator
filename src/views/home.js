@@ -112,7 +112,7 @@ export default {
             if (this.selectedColor !== undefined) {
                 var index = this.swatches.indexOf(this.selectedColor);
                 if (index > -1) {
-                    this.swatches.splice(index);
+                    this.swatches.splice(index, 1);
                     this.selectedColor = undefined;
                 }
             }
