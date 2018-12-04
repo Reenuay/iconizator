@@ -15,6 +15,7 @@ export default {
     },
     data() {
         return {
+            startKeywordingAfterProcessing: false,
             iconizatorIconsFolder: undefined,
             keyworderIconsFolder: undefined,
             iconizatorIsProcessing: false,
@@ -178,6 +179,13 @@ export default {
                 this.processingStop = true;
                 setTimeout(() => {
                     this.switchProcessing();
+                    if (
+                        this.startKeywordingAfterProcessing &&
+                        !this.keyworderIsProcessing &&
+                        this.keyworderIsReady
+                    ) {
+                        this.switchKeywording();
+                    }
                 }, 2000);
             }
         });

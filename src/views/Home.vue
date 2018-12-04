@@ -79,9 +79,9 @@
                     <b-form-group label="Icon size:"
                         label-cols="2"
                         breakpoint="md"
-                        description="Maximum 1000 mm"
+                        description="Maximum 1000"
                         horizontal>
-                        <b-form-input placeholder="Icon size in mm"
+                        <b-form-input placeholder="Icon size"
                             type="number"
                             min="1"
                             max="1000"
@@ -141,6 +141,15 @@
                             </b-row>
                         </b-container>
                     </b-popover>
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col md="8" offset-md="2" class="mb-3">
+                    <b-form-checkbox v-model="startKeywordingAfterProcessing"
+                     :value="true"
+                     :unchecked-value="false">
+                        Start keywording after processing
+                    </b-form-checkbox>
                 </b-col>
             </b-row>
             <b-row>
