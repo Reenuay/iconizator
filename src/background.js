@@ -162,8 +162,9 @@ ipcMain.on("stopProcessing", (e, userInit) => {
 ipcMain.on("startKeywording", async (e, data) => {
     stopKeywording = false;
 
-    const extension = /\..+$/gi;
-    const nonLatin = /[^a-zA-Z]+/gi;
+    const index = /^[0-9]+-(?=[a-zA-Z0-9])/g;
+    const end = /(-\d+)?\s*((\(\d+\))|(_\d+_))?\..+$/gi;
+    const nonLatinOrNumber = /[^a-zA-Z0-9]+/gi;
     const multipleSpaces = /\s+/gi;
     const url = "http://microstockgroup.com/tools/keyword.php";
 
@@ -175,8 +176,9 @@ ipcMain.on("startKeywording", async (e, data) => {
         if (!file.match(/\.jpe?g$/i)) continue;
 
         const cleaned = file
-            .replace(extension, "")
-            .replace(nonLatin, " ")
+            .replace(index, "")
+            .replace(end, "")
+            .replace(nonLatinOrNumber, " ")
             .replace(multipleSpaces, " ")
             .trim();
 
