@@ -32,7 +32,7 @@
                     <b-form-group label="Background Path:"
                         label-cols="2"
                         breakpoint="md"
-                        description="Preferred size 500x500 mm"
+                        description="Preferred ratio 1:1"
                         horizontal>
                         <div>
                             <span>

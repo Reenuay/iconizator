@@ -104,7 +104,10 @@ for (var index in files) {
     clipScan(targetDoc);
 
     // Create file names
-    var fileName = file.name.replace(/\.[a-z]*$/g, "").replace(/(\(|\))/g, "_");
+    var fileName = file.name
+        .replace(/\.[a-z]*$/g, "")
+        .replace(/(\(|\)|%20)/g, "_");
+
     var epsName = pathJoin(saveFolder, fileName + ".eps");
     var jpegName = pathJoin(saveFolder, fileName + ".jpeg");
 
@@ -127,7 +130,11 @@ for (var index in files) {
     exportOptions.verticalScale = 500;
     exportOptions.artBoardClipping = true;
 
-    targetDoc.exportFile(new File(jpegName), ExportType.JPEG, exportOptions);
+    var jpegFile = new File(jpegName);
+
+    targetDoc.exportFile(jpegFile, ExportType.JPEG, exportOptions);
+
+    jpegFile.rename(jpegName);
 
     // Remove icon from artboard
     icon.remove();
