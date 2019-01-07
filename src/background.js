@@ -8,6 +8,7 @@ import axios from "axios";
 import cheerio from "cheerio";
 import exiftool from "node-exiftool";
 import querystring from "querystring";
+import moment from "moment";
 import { execFile as child } from "child_process";
 import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import {
@@ -92,16 +93,11 @@ ipcMain.on("startProcessing", (e, data) => {
     fs.writeFileSync(mediatorFile, "");
 
     // Save folder
-    const now = new Date(Date.now());
-
     if (!fs.existsSync(data.processedFolder))
         fs.mkdirSync(data.processedFolder);
 
     const saveFolder = path.resolve(
-        path.join(
-            data.processedFolder,
-            `${now.getDay()}_${now.getMonth()}_${now.getFullYear()} ${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}`
-        )
+        path.join(data.processedFolder, moment().format("DD-MM-YYYY HH-mm-ss"))
     );
 
     fs.mkdirSync(saveFolder);

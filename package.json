@@ -2,7 +2,9 @@
     "name": "iconizator",
     "version": "0.1.0",
     "private": true,
-    "author": {"name": "Rustam Azizov"},
+    "author": {
+        "name": "Rustam Azizov"
+    },
     "description": "Simple app for preparing icons for stocks.",
     "scripts": {
         "serve": "vue-cli-service serve",
@@ -19,6 +21,7 @@
         "chokidar": "^2.0.4",
         "dist-exiftool": "^10.53.0",
         "electron-json-storage": "^4.1.4",
+        "moment": "^2.23.0",
         "mustache": "^3.0.1",
         "node-exiftool": "^2.3.0",
         "querystring": "^0.2.0",
