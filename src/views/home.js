@@ -32,6 +32,7 @@ export default {
             background: undefined,
             keyworderProgress: 0,
             popoverShow: false,
+            blacklist: "",
             iconSize: 800,
             swatches: [],
             title: ""
@@ -91,6 +92,10 @@ export default {
 
                 ipcRenderer.send("startKeywording", {
                     iconsFolder: this.keyworderIconsFolder,
+                    blacklist: this.blacklist
+                        .split(";")
+                        .map(v => v.trim().replace(/\s+/, " "))
+                        .filter(v => v !== ""),
                     title: this.title
                 });
             } else {
@@ -146,6 +151,10 @@ export default {
 
         title(value) {
             storage.set("title", value);
+        },
+
+        blacklist(value) {
+            storage.set("blacklist", value);
         }
     },
     created() {
@@ -175,6 +184,10 @@ export default {
 
         storage.get("title", (error, data) => {
             if (typeof data === "string") this.title = data;
+        });
+
+        storage.get("blacklist", (error, data) => {
+            if (typeof data === "string") this.blacklist = data;
         });
 
         ipcRenderer.on("saveFolderCreated", (event, path) => {

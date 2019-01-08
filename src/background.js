@@ -273,7 +273,12 @@ ipcMain.on("startKeywording", async (e, data) => {
 
             keywordArray = req.concat(
                 keywordArray
-                    .filter((v, i, a) => a.indexOf(v) === i && !req.includes(v))
+                    .filter(
+                        (v, i, a) =>
+                            a.indexOf(v) === i &&
+                            !data.blacklist.includes(v) &&
+                            !req.includes(v)
+                    )
                     .slice(0, 50 - req.length)
             );
 
