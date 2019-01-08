@@ -159,7 +159,9 @@ ipcMain.on("startKeywording", async (e, data) => {
     stopKeywording = false;
 
     const index = /^[0-9]+-(?=[a-zA-Z0-9])/g;
-    const end = /(-\d+)?\s*((\(\d+\))|(_\d+_))?\..+$/gi;
+    const extension = /\..+$/g;
+    const copyNumber = /(_|\()\d+(_|\))$/g;
+    const postIndex = /(-\d+)$/gi;
     const nonLatinOrNumber = /[^a-zA-Z0-9]+/gi;
     const multipleSpaces = /\s+/gi;
     const url = "http://microstockgroup.com/tools/keyword.php";
@@ -173,7 +175,9 @@ ipcMain.on("startKeywording", async (e, data) => {
 
         const cleaned = file
             .replace(index, "")
-            .replace(end, "")
+            .replace(extension, "")
+            .replace(copyNumber, "")
+            .replace(postIndex, "")
             .replace(nonLatinOrNumber, " ")
             .replace(multipleSpaces, " ")
             .trim();
