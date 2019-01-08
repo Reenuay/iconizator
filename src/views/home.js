@@ -120,6 +120,14 @@ export default {
         }
     },
     watch: {
+        iconizatorIconsFolder(value) {
+            storage.set("iconizatorIconsFolder", value);
+        },
+
+        background(value) {
+            storage.set("background", value);
+        },
+
         illustrator(value) {
             storage.set("illustrator", value);
         },
@@ -141,6 +149,14 @@ export default {
         }
     },
     created() {
+        storage.get("iconizatorIconsFolder", (error, data) => {
+            if (typeof data === "string") this.iconizatorIconsFolder = data;
+        });
+
+        storage.get("background", (error, data) => {
+            if (typeof data === "string") this.background = data;
+        });
+
         storage.get("illustrator", (error, data) => {
             if (typeof data === "string") this.illustrator = data;
         });
