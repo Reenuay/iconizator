@@ -121,6 +121,15 @@ export default {
                     this.selectedColor = undefined;
                 }
             }
+        },
+        blacklistChanged() {
+            this.blacklist = this.blacklist
+                .split(";")
+                .map(v => v.trim().replace(/\s+/, " "))
+                .filter((v, i, a) => v !== "" && a.indexOf(v) === i) //not empty and unique
+                .join(";");
+
+            storage.set("blacklist", this.blacklist);
         }
     },
     watch: {
@@ -150,10 +159,6 @@ export default {
 
         title(value) {
             storage.set("title", value);
-        },
-
-        blacklist(value) {
-            storage.set("blacklist", value);
         }
     },
     created() {

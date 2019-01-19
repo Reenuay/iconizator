@@ -216,6 +216,7 @@
                         horizontal>
                         <b-form-textarea placeholder="Blacklist"
                             v-model="blacklist"
+                            @input="blacklistChanged()"
                             rows="6"
                             max-rows="6">
                         </b-form-textarea>

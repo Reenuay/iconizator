@@ -279,9 +279,9 @@ ipcMain.on("startKeywording", async (e, data) => {
                 keywordArray
                     .filter(
                         (v, i, a) =>
-                            a.indexOf(v) === i &&
-                            !data.blacklist.includes(v) &&
-                            !req.includes(v)
+                            a.indexOf(v) === i && //unqiue
+                            !data.blacklist.includes(v) && //not in black list
+                            !req.includes(v) //not in requireds
                     )
                     .slice(0, 50 - req.length)
             );
