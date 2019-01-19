@@ -45,7 +45,6 @@ export default {
                 this.background !== undefined &&
                 this.illustrator !== undefined &&
                 this.processedFolder !== undefined &&
-                this.selectedColor !== undefined &&
                 this.iconizatorIconsFolder !== undefined
             );
         },

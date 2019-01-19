@@ -7,8 +7,6 @@ var saveFolder = "{{saveFolder}}";
 var iconSize = parseInt("{{iconSize}}", 10);
 var color = "{{color}}";
 
-color = color.substr(1, 6);
-
 // Predefined constants
 var jpegSize = 5000;
 var docSize = 1000;
@@ -36,6 +34,7 @@ var hexes = {
 var newColor;
 
 if (color) {
+    color = color.substr(1, 6);
     newColor = new RGBColor();
     newColor.red = hexes[color[0]] * 16 + hexes[color[1]];
     newColor.green = hexes[color[2]] * 16 + hexes[color[3]];
