@@ -273,7 +273,7 @@ ipcMain.on("startKeywording", async (e, data) => {
             });
 
             // Create meta
-            const req = [keyword, "icon", "illustration", "vector"];
+            const req = ["icon", "illustration", "vector"];
 
             keywordArray = req.concat(
                 keywordArray
