@@ -56,6 +56,15 @@ export default {
         }
     },
     methods: {
+        switchSwatch(value) {
+            console.log(value);
+            console.log(this.selectedColor);
+            if (value === this.selectedColor) {
+                this.selectedColor = undefined;
+            } else {
+                this.selectedColor = value;
+            }
+        },
         onOk() {
             this.popoverShow = false;
         },

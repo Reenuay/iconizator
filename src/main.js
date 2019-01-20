@@ -14,6 +14,6 @@ new Vue({
     render: h => h(App),
     mounted() {
         // Prevent blank screen in Electron builds
-        this.$router.push('/')
+        this.$router.push("/");
     }
 }).$mount("#app");

@@ -95,9 +95,10 @@
                         horizontal>
                         <div>
                             <swatches :colors="swatches"
+                                @input="switchSwatch"
                                 max-height="80"
-                                v-model="selectedColor"
                                 shapes="circles"
+                                :value="selectedColor"
                                 inline>
                             </swatches>
                             <b-btn class="ml-3"
