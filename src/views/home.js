@@ -32,6 +32,7 @@ export default {
             background: undefined,
             keyworderProgress: 0,
             popoverShow: false,
+            saveFlipped: false,
             blacklist: "",
             iconSize: 800,
             swatches: [],
@@ -79,12 +80,13 @@ export default {
                 this.iconizatorIsProcessing = true;
 
                 ipcRenderer.send("startProcessing", {
-                    backgroundPath: this.background,
                     iconsFolder: this.iconizatorIconsFolder,
                     processedFolder: this.processedFolder,
+                    backgroundPath: this.background,
                     illustrator: this.illustrator,
-                    iconSize: this.iconSize,
-                    color: this.selectedColor
+                    saveFlipped: this.saveFlipped,
+                    color: this.selectedColor,
+                    iconSize: this.iconSize
                 });
             } else {
                 this.iconizatorIsProcessing = false;

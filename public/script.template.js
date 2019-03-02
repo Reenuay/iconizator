@@ -6,6 +6,7 @@ var iconsFolder = "{{iconsFolder}}";
 var saveFolder = "{{saveFolder}}";
 var iconSize = parseInt("{{iconSize}}", 10);
 var color = "{{color}}";
+var saveFlipped = "{{saveFlipped}}" === "true";
 
 // Predefined constants
 var jpegSize = 5000;
@@ -95,6 +96,10 @@ for (var index in files) {
 
     icon.left = x + (w - icon.width) / 2;
     icon.top = targetDoc.height - (y + (h - icon.height) / 2);
+
+    if (saveFlipped) {
+        icon.resize(-100, 100);
+    }
 
     // Give it a color
     if (newColor) setColor(icon, newColor);

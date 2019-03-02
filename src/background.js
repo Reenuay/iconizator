@@ -129,6 +129,7 @@ ipcMain.on("startProcessing", (e, data) => {
         iconsFolder: data.iconsFolder.replace(/\\/g, "\\\\"),
         iconSize: data.iconSize,
         color: data.color,
+        saveFlipped: data.saveFlipped,
 
         saveFolder: saveFolder.replace(/\\/g, "\\\\"),
         progressFile: progressFile.replace(/\\/g, "\\\\"),

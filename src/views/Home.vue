@@ -146,6 +146,15 @@
             </b-row>
             <b-row>
                 <b-col md="8" offset-md="2" class="mb-3">
+                    <b-form-checkbox v-model="saveFlipped"
+                     :value="true"
+                     :unchecked-value="false">
+                        Save flipped
+                    </b-form-checkbox>
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col md="8" offset-md="2" class="mb-3">
                     <b-form-checkbox v-model="startKeywordingAfterProcessing"
                      :value="true"
                      :unchecked-value="false">
