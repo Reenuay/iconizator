@@ -15,34 +15,62 @@
                         label-cols="2"
                         breakpoint="md"
                         horizontal>
-                        <div>
-                            <span>
-                                {{
-                                    iconizatorIconsFolder
-                                        ? iconizatorIconsFolder
-                                        : 'Choose a folder with icons...'
-                                }}
-                            </span>
-                            <b-btn @click="openDialog('iconizatorIconsFolder', 'folder')"
-                                class="ml-3 float-right">
-                                Browse
-                            </b-btn>
-                        </div>
+                        <b-row align-v="center">
+                            <b-col md="9">
+                                <b-form-select v-model="iconizatorIconsFolder" md="8">
+                                    <option :value="undefined">Choose a folder with icons...</option>
+                                    <option v-for="i in iconizatorIconsFolders"
+                                        :value="i"
+                                        :key="i">
+                                        {{i}}
+                                    </option>
+                                </b-form-select>
+                            </b-col>
+                            <b-col md="1">
+                                <b-btn @click="removeFromList('iconizatorIconsFolders', 'iconizatorIconsFolder')"
+                                    class="ml-3 float-right"
+                                    variant="danger">
+                                    x
+                                </b-btn>
+                            </b-col>
+                            <b-col md="2">
+                                <b-btn @click="openDialog('iconizatorIconsFolder', 'folder')"
+                                    class="ml-3 float-right">
+                                    Browse
+                                </b-btn>
+                            </b-col>
+                        </b-row>
                     </b-form-group>
                     <b-form-group label="Background Path:"
                         label-cols="2"
                         breakpoint="md"
                         description="Preferred ratio 1:1"
                         horizontal>
-                        <div>
-                            <span>
-                                {{background ? background : 'Choose a vector file...'}}
-                            </span>
-                            <b-btn @click="openDialog('background', 'file', [{name: 'vector', extensions:['svg', 'ai', 'eps']}])"
-                                class="ml-3 float-right">
-                                Browse
-                            </b-btn>
-                        </div>
+                        <b-row align-v="center">
+                            <b-col md="9">
+                                <b-form-select v-model="background" md="8">
+                                    <option :value="undefined">Choose a vector file...</option>
+                                    <option v-for="i in backgrounds"
+                                        :value="i"
+                                        :key="i">
+                                        {{i}}
+                                    </option>
+                                </b-form-select>
+                            </b-col>
+                            <b-col md="1">
+                                <b-btn @click="removeFromList('backgrounds', 'background')"
+                                    class="ml-3 float-right"
+                                    variant="danger">
+                                    x
+                                </b-btn>
+                            </b-col>
+                            <b-col md="2">
+                                <b-btn @click="openDialog('background', 'file', [{name: 'vector', extensions:['svg', 'ai', 'eps']}])"
+                                    class="ml-3 float-right">
+                                    Browse
+                                </b-btn>
+                            </b-col>
+                        </b-row>
                     </b-form-group>
                     <b-form-group label="Save Folder Path:"
                         label-cols="2"
@@ -217,8 +245,52 @@
                         label-cols="2"
                         breakpoint="md"
                         horizontal>
-                        <b-form-input v-model="title" placeholder="Title">
-                        </b-form-input>
+                        <b-row align-v="center">
+                            <b-col md="9">
+                                <b-form-select v-model="title" md="8">
+                                    <option :value="undefined">Choose a title</option>
+                                    <option v-for="i in titles"
+                                        :value="i"
+                                        :key="i">
+                                        {{i}}
+                                    </option>
+                                </b-form-select>
+                            </b-col>
+                            <b-col md="1">
+                                <b-btn @click="editTitle()"
+                                    class="ml-3 float-right"
+                                    variant="primary">
+                                    Edit
+                                </b-btn>
+                            </b-col>
+                            <b-col md="2">
+                                <b-btn @click="removeFromList('titles', 'title')"
+                                    class="ml-3 float-right"
+                                    variant="danger">
+                                    Delete
+                                </b-btn>
+                            </b-col>
+                        </b-row>
+                        <b-row align-v="center" class="mt-3">
+                            <b-col md="9">
+                                <b-form-input v-model="newTitle" placeholder="Type new title...">
+                                </b-form-input>
+                            </b-col>
+                            <b-col md="1">
+                                <b-btn @click="addTitle()"
+                                    class="ml-3 float-right"
+                                    variant="primary">
+                                    Add
+                                </b-btn>
+                            </b-col>
+                            <b-col md="2">
+                                <b-btn @click="updateTitle()"
+                                    class="ml-3 float-right"
+                                    variant="primary">
+                                    Update
+                                </b-btn>
+                            </b-col>
+                        </b-row>
                     </b-form-group>
                     <b-form-group label="Blacklist:"
                         label-cols="2"

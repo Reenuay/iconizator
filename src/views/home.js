@@ -17,6 +17,7 @@ export default {
         return {
             startKeywordingAfterProcessing: false,
             iconizatorIconsFolder: undefined,
+            iconizatorIconsFolders: [],
             keyworderIconsFolder: undefined,
             iconizatorIsProcessing: false,
             keyworderIsProcessing: false,
@@ -30,13 +31,16 @@ export default {
             iconizatorProgress: 0,
             processingStop: false,
             background: undefined,
+            backgrounds: [],
             keyworderProgress: 0,
             popoverShow: false,
             saveFlipped: false,
             blacklist: "",
             iconSize: 800,
             swatches: [],
-            title: ""
+            title: undefined,
+            titles: [],
+            newTitle: undefined
         };
     },
     computed: {
@@ -122,7 +126,10 @@ export default {
                 filters: filters
             });
 
-            if (value) this[prop] = value[0];
+            if (value) {
+                this[prop] = value[0];
+                this[prop + "s"].push(value[0]);
+            }
         },
         removeSwatch() {
             if (this.selectedColor !== undefined) {
@@ -141,6 +148,27 @@ export default {
                 .join(";");
 
             storage.set("blacklist", this.blacklist);
+        },
+        removeFromList(list, item) {
+            this[list].splice(this[list].indexOf(this[item]), 1);
+            this[item] = undefined;
+        },
+        addTitle() {
+            if (this.newTitle) {
+                this.titles.push(this.newTitle);
+                this.title = this.newTitle;
+                this.newTitle = undefined;
+            }
+        },
+        editTitle() {
+            if (this.title) this.newTitle = this.title;
+        },
+        updateTitle() {
+            if (!this.titles.includes(this.newTitle)) {
+                this.titles[this.titles.indexOf(this.title)] = this.newTitle;
+                this.title = this.newTitle;
+                this.newTitle = undefined;
+            }
         }
     },
     watch: {
@@ -148,8 +176,16 @@ export default {
             storage.set("iconizatorIconsFolder", value);
         },
 
+        iconizatorIconsFolders(value) {
+            storage.set("iconizatorIconsFolders", value);
+        },
+
         background(value) {
             storage.set("background", value);
+        },
+
+        backgrounds(value) {
+            storage.set("backgrounds", value);
         },
 
         illustrator(value) {
@@ -170,6 +206,10 @@ export default {
 
         title(value) {
             storage.set("title", value);
+        },
+
+        titles(value) {
+            storage.set("titles", value);
         }
     },
     created() {
@@ -177,8 +217,16 @@ export default {
             if (typeof data === "string") this.iconizatorIconsFolder = data;
         });
 
+        storage.get("iconizatorIconsFolders", (error, data) => {
+            if (Array.isArray(data)) this.iconizatorIconsFolders = data;
+        });
+
         storage.get("background", (error, data) => {
             if (typeof data === "string") this.background = data;
+        });
+
+        storage.get("backgrounds", (error, data) => {
+            if (Array.isArray(data)) this.backgrounds = data;
         });
 
         storage.get("illustrator", (error, data) => {
@@ -199,6 +247,10 @@ export default {
 
         storage.get("title", (error, data) => {
             if (typeof data === "string") this.title = data;
+        });
+
+        storage.get("titles", (error, data) => {
+            if (Array.isArray(data)) this.titles = data;
         });
 
         storage.get("blacklist", (error, data) => {
