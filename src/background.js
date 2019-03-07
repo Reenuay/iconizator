@@ -165,7 +165,7 @@ ipcMain.on("startKeywording", async (e, data) => {
     const postIndex = /(-\d+)$/gi;
     const nonLatinOrNumber = /[^a-zA-Z0-9]+/gi;
     const multipleSpaces = /\s+/gi;
-    const url = "http://microstockgroup.com/tools/keyword.php";
+    const url = "https://microstockgroup.com/tools/keyword.php";
 
     let keywords = {};
     let progress = 0;
@@ -225,67 +225,71 @@ ipcMain.on("startKeywording", async (e, data) => {
         for (const keyword in keywords) {
             if (stopKeywording) break;
 
-            // Get pictures
-            let res = await axios.post(
-                url,
-                querystring.stringify({
-                    search_term: keyword,
-                    image_type: "photo",
-                    language: "en",
-                    num_results: 10,
-                    only_models: "on"
-                }),
-                {
-                    headers: {
-                        "content-type": "application/x-www-form-urlencoded"
-                    }
-                }
-            );
-
-            if (stopKeywording) break;
-
-            // Parse them
-            let $ = cheerio.load(res.data);
-            const imgIds = [];
-
-            $(".singleCell img").each((i, img) => {
-                imgIds.push($(img).attr("id"));
-            });
-
-            // Get keywords
-            res = await axios.post(
-                url,
-                querystring.stringify({
-                    "imageid[]": imgIds
-                }),
-                {
-                    headers: {
-                        "content-type": "application/x-www-form-urlencoded"
-                    }
-                }
-            );
-
-            // Parse them
-            $ = cheerio.load(res.data);
             let keywordArray = [];
 
-            $(".keywordDisplay").each((i, el) => {
-                keywordArray.push($(el).attr("id"));
-            });
+            if (!data.titleOnly) {
+                // Get pictures
+                let res = await axios.post(
+                    url,
+                    querystring.stringify({
+                        search_term: keyword,
+                        image_type: "photo",
+                        language: "en",
+                        num_results: 10,
+                        only_models: "on"
+                    }),
+                    {
+                        headers: {
+                            "content-type": "application/x-www-form-urlencoded"
+                        }
+                    }
+                );
 
-            // Create meta
-            const req = ["icon", "illustration", "vector"];
+                if (stopKeywording) break;
 
-            keywordArray = req.concat(
-                keywordArray
-                    .filter(
-                        (v, i, a) =>
-                            a.indexOf(v) === i && //unqiue
-                            !data.blacklist.includes(v) && //not in black list
-                            !req.includes(v) //not in requireds
-                    )
-                    .slice(0, 50 - req.length)
-            );
+                // Parse them
+                let $ = cheerio.load(res.data);
+                const imgIds = [];
+
+                $(".singleCell img").each((i, img) => {
+                    imgIds.push($(img).attr("id"));
+                });
+                // Get keywords
+                res = await axios.post(
+                    url,
+                    querystring.stringify({
+                        "imageid[]": imgIds
+                    }),
+                    {
+                        headers: {
+                            "content-type": "application/x-www-form-urlencoded"
+                        }
+                    }
+                );
+
+                // Parse them
+                $ = cheerio.load(res.data);
+
+                $(".keywordDisplay").each((i, el) => {
+                    keywordArray.push($(el).attr("id"));
+                });
+
+                // Create meta
+                const req = ["icon", "illustration", "vector"];
+
+                keywordArray = req.concat(
+                    keywordArray
+                        .filter(
+                            (v, i, a) =>
+                                a.indexOf(v) === i && //unqiue
+                                !data.blacklist.includes(v) && //not in black list
+                                !req.includes(v) //not in requireds
+                        )
+                        .slice(0, 50 - req.length)
+                );
+            }
+
+            if (stopKeywording) break;
 
             const title = Mustache.render(data.title, {
                 i: keyword,
@@ -301,15 +305,14 @@ ipcMain.on("startKeywording", async (e, data) => {
                     keywords[keyword][index]
                 );
 
-                ep.writeMetadata(
-                    filePath,
-                    {
-                        Keywords: keywordArray,
-                        Title: title,
-                        Description: title
-                    },
-                    ["overwrite_original"]
-                );
+                let metaObject = {
+                    Title: title,
+                    Description: title
+                };
+
+                if (!data.titleOnly) metaObject.Keywords = keywordArray;
+
+                ep.writeMetadata(filePath, metaObject, ["overwrite_original"]);
 
                 win.send("keyworderProgressChanged", {
                     progress: ++progress,

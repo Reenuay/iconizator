@@ -17,11 +17,11 @@ export default {
         return {
             startKeywordingAfterProcessing: false,
             iconizatorIconsFolder: undefined,
-            iconizatorIconsFolders: [],
             keyworderIconsFolder: undefined,
             iconizatorIsProcessing: false,
             keyworderIsProcessing: false,
             processedFolder: undefined,
+            iconizatorIconsFolders: [],
             color: { hex: "#000000" },
             selectedColor: undefined,
             iconizatorMaxProgress: 0,
@@ -31,16 +31,17 @@ export default {
             iconizatorProgress: 0,
             processingStop: false,
             background: undefined,
-            backgrounds: [],
             keyworderProgress: 0,
+            newTitle: undefined,
             popoverShow: false,
             saveFlipped: false,
+            titleOnly: false,
+            title: undefined,
+            backgrounds: [],
             blacklist: "",
             iconSize: 800,
             swatches: [],
-            title: undefined,
-            titles: [],
-            newTitle: undefined
+            titles: []
         };
     },
     computed: {
@@ -110,6 +111,7 @@ export default {
                         .split(";")
                         .map(v => v.trim().replace(/\s+/, " "))
                         .filter(v => v !== ""),
+                    titleOnly: this.titleOnly,
                     title: this.title
                 });
             } else {
@@ -128,7 +130,8 @@ export default {
 
             if (value) {
                 this[prop] = value[0];
-                this[prop + "s"].push(value[0]);
+                if (Array.isArray(this[prop + "s"]))
+                    this[prop + "s"].push(value[0]);
             }
         },
         removeSwatch() {
@@ -303,7 +306,7 @@ export default {
         });
 
         ipcRenderer.on("alert", (event, data) => {
-            alert(data);
+            console.log(data);
         });
     }
 };
