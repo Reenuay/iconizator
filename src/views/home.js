@@ -32,13 +32,17 @@ export default {
             processingStop: false,
             background: undefined,
             keyworderProgress: 0,
+            splitterRegex: /;|,/,
             newTitle: undefined,
             popoverShow: false,
             saveFlipped: false,
+            addRequireds: true,
+            spacesRegex: /\s+/,
             titleOnly: false,
             title: undefined,
             backgrounds: [],
             blacklist: "",
+            requireds: "",
             iconSize: 800,
             swatches: [],
             titles: []
@@ -62,6 +66,19 @@ export default {
         }
     },
     methods: {
+        splitKeywords(keywords) {
+            return keywords
+                .split(this.splitterRegex)
+                .map(v => v.trim().replace(this.spacesRegex, " "))
+                .filter(v => v !== "");
+        },
+        cleanseKeywords(keywords) {
+            return keywords
+                .split(this.splitterRegex)
+                .map(v => v.trim().replace(this.spacesRegex, " "))
+                .filter((v, i, a) => v !== "" && a.indexOf(v) === i) //not empty and unique
+                .join(";");
+        },
         switchSwatch(value) {
             console.log(value);
             console.log(this.selectedColor);
@@ -107,12 +124,12 @@ export default {
 
                 ipcRenderer.send("startKeywording", {
                     iconsFolder: this.keyworderIconsFolder,
-                    blacklist: this.blacklist
-                        .split(";")
-                        .map(v => v.trim().replace(/\s+/, " "))
-                        .filter(v => v !== ""),
+                    blacklist: this.splitKeywords(this.blacklist),
                     titleOnly: this.titleOnly,
-                    title: this.title
+                    title: this.title,
+                    requireds: this.addRequireds
+                        ? this.splitKeywords(this.requireds)
+                        : []
                 });
             } else {
                 this.keyworderIsProcessing = false;
@@ -144,13 +161,12 @@ export default {
             }
         },
         blacklistChanged() {
-            this.blacklist = this.blacklist
-                .split(";")
-                .map(v => v.trim().replace(/\s+/, " "))
-                .filter((v, i, a) => v !== "" && a.indexOf(v) === i) //not empty and unique
-                .join(";");
-
+            this.blacklist = this.cleanseKeywords(this.blacklist);
             storage.set("blacklist", this.blacklist);
+        },
+        requiredsChanged() {
+            this.requireds = this.cleanseKeywords(this.requireds);
+            storage.set("requireds", this.requireds);
         },
         removeFromList(list, item) {
             this[list].splice(this[list].indexOf(this[item]), 1);
@@ -257,7 +273,15 @@ export default {
         });
 
         storage.get("blacklist", (error, data) => {
-            if (typeof data === "string") this.blacklist = data;
+            if (typeof data === "string") {
+                this.blacklist = data;
+            } else {
+                this.blacklist = "vector;illustration;pictogramm";
+            }
+        });
+
+        storage.get("requireds", (error, data) => {
+            if (typeof data === "string") this.requireds = data;
         });
 
         ipcRenderer.on("saveFolderCreated", (event, path) => {

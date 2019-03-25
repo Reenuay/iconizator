@@ -315,6 +315,30 @@
                 </b-col>
             </b-row>
             <b-row>
+                <b-col md="8" offset-md="2" class="mb-3">
+                    <b-form-checkbox v-model="addRequireds"
+                     :value="true"
+                     :unchecked-value="false">
+                        Add requireds
+                    </b-form-checkbox>
+                </b-col>
+            </b-row>
+            <b-row :hidden="!addRequireds">
+                <b-col md="8" offset-md="2">
+                    <b-form-group label="Requireds:"
+                        label-cols="2"
+                        breakpoint="md"
+                        horizontal>
+                        <b-form-textarea placeholder="Requireds"
+                            v-model="requireds"
+                            @input="requiredsChanged()"
+                            rows="6"
+                            max-rows="6">
+                        </b-form-textarea>
+                    </b-form-group>
+                </b-col>
+            </b-row>
+            <b-row>
                 <b-col md="8" offset-md="2" class="text-center mb-3">
                     <b-btn :disabled="!keyworderIsReady"
                         :variant="keyworderIsProcessing ? 'danger' : 'primary'"

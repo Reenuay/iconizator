@@ -275,17 +275,15 @@ ipcMain.on("startKeywording", async (e, data) => {
                 });
 
                 // Create meta
-                const req = ["icon", "illustration", "vector"];
-
-                keywordArray = req.concat(
+                keywordArray = data.requireds.concat(
                     keywordArray
                         .filter(
                             (v, i, a) =>
                                 a.indexOf(v) === i && //unqiue
                                 !data.blacklist.includes(v) && //not in black list
-                                !req.includes(v) //not in requireds
+                                !data.requireds.includes(v) //not in requireds
                         )
-                        .slice(0, 50 - req.length)
+                        .slice(0, 50 - data.requireds.length)
                 );
             }
 
