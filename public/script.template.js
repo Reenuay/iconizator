@@ -7,6 +7,7 @@ var saveFolder = "{{saveFolder}}";
 var iconSize = parseInt("{{iconSize}}", 10);
 var color = "{{color}}";
 var saveFlipped = "{{saveFlipped}}" === "true";
+var onlyJPEG = "{{onlyJPEG}}" === "true";
 
 // Predefined constants
 var jpegSize = 5000;
@@ -115,15 +116,17 @@ for (var index in files) {
     var epsName = pathJoin(saveFolder, fileName + ".eps");
     var jpegName = pathJoin(saveFolder, fileName + ".jpeg");
 
-    // Save eps file
-    var saveOptions = new EPSSaveOptions();
-    saveOptions.preview = EPSPreview.TRANSPARENTCOLORTIFF;
-    saveOptions.compatibility = Compatibility.ILLUSTRATOR10;
-    saveOptions.embedAllFonts = true;
-    saveOptions.cmykPostScript = true;
-    saveOptions.embedLinkedFiles = true;
+    if (!onlyJPEG) {
+        // Save eps file
+        var saveOptions = new EPSSaveOptions();
+        saveOptions.preview = EPSPreview.TRANSPARENTCOLORTIFF;
+        saveOptions.compatibility = Compatibility.ILLUSTRATOR10;
+        saveOptions.embedAllFonts = true;
+        saveOptions.cmykPostScript = true;
+        saveOptions.embedLinkedFiles = true;
 
-    targetDoc.saveAs(new File(epsName), saveOptions);
+        targetDoc.saveAs(new File(epsName), saveOptions);
+    }
 
     // Save jpeg file
     var exportOptions = new ExportOptionsJPEG();

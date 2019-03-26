@@ -23,8 +23,8 @@ export default {
             processedFolder: undefined,
             iconizatorIconsFolders: [],
             color: { hex: "#000000" },
-            selectedColor: undefined,
             iconizatorMaxProgress: 0,
+            selectedColor: undefined,
             keyworderMaxProgress: 0,
             illustrator: undefined,
             keywordingStop: false,
@@ -34,16 +34,17 @@ export default {
             keyworderProgress: 0,
             splitterRegex: /;|,/,
             newTitle: undefined,
-            popoverShow: false,
             saveFlipped: false,
             addRequireds: true,
             spacesRegex: /\s+/,
+            popoverShow: false,
             titleOnly: false,
             title: undefined,
             backgrounds: [],
-            blacklist: "",
+            onlyJPEG: false,
             requireds: "",
             iconSize: 800,
+            blacklist: "",
             swatches: [],
             titles: []
         };
@@ -108,7 +109,8 @@ export default {
                     illustrator: this.illustrator,
                     saveFlipped: this.saveFlipped,
                     color: this.selectedColor,
-                    iconSize: this.iconSize
+                    iconSize: this.iconSize,
+                    onlyJPEG: this.onlyJPEG
                 });
             } else {
                 this.iconizatorIsProcessing = false;
