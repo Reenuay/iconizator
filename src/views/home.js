@@ -18,33 +18,40 @@ export default {
             startKeywordingAfterProcessing: false,
             iconizatorIconsFolder: undefined,
             keyworderIconsFolder: undefined,
+            cleanserIconsFolder: undefined,
             iconizatorIsProcessing: false,
             keyworderIsProcessing: false,
+            cleanserIsProcessing: false,
             processedFolder: undefined,
             iconizatorIconsFolders: [],
             color: { hex: "#000000" },
             iconizatorMaxProgress: 0,
             selectedColor: undefined,
             keyworderMaxProgress: 0,
+            cleanserMaxProgress: 0,
             illustrator: undefined,
             keywordingStop: false,
-            iconizatorProgress: 0,
             processingStop: false,
+            iconizatorProgress: 0,
             background: undefined,
+            cleansingStop: false,
             keyworderProgress: 0,
             splitterRegex: /;|,/,
+            cleanserProgress: 0,
             newTitle: undefined,
-            saveFlipped: false,
-            addRequireds: true,
             spacesRegex: /\s+/,
             popoverShow: false,
+            saveFlipped: false,
+            wordsToCleanse: "",
+            addRequireds: true,
+            cleanseTitle: true,
             titleOnly: false,
             title: undefined,
             backgrounds: [],
             onlyJPEG: false,
-            requireds: "",
             iconSize: 800,
             blacklist: "",
+            requireds: "",
             swatches: [],
             titles: []
         };
@@ -64,6 +71,12 @@ export default {
         },
         keyworderIsReady() {
             return this.keyworderIconsFolder !== undefined && this.title !== "";
+        },
+        cleanserIsReady() {
+            return (
+                this.cleanserIconsFolder !== undefined &&
+                this.wordsToCleanse != ""
+            );
         }
     },
     methods: {
@@ -141,6 +154,23 @@ export default {
                 ipcRenderer.send("stopKeywording");
             }
         },
+        switchCleansing() {
+            if (!this.cleanserIsProcessing) {
+                this.cleanserIsProcessing = true;
+
+                ipcRenderer.send("startCleansing", {
+                    iconsFolder: this.cleanserIconsFolder,
+                    wordsToCleanse: this.splitKeywords(this.wordsToCleanse),
+                    cleanseTitle: this.cleanseTitle
+                });
+            } else {
+                this.cleanserIsProcessing = false;
+                this.cleanserProgress = 0;
+                this.cleanserMaxProgress = 0;
+                this.cleansingStop = false;
+                ipcRenderer.send("stopCleansing");
+            }
+        },
         openDialog(prop, mode, filters = []) {
             const value = dialog.showOpenDialog({
                 properties: [mode === "file" ? "openFile" : "openDirectory"],
@@ -169,6 +199,10 @@ export default {
         requiredsChanged() {
             this.requireds = this.cleanseKeywords(this.requireds);
             storage.set("requireds", this.requireds);
+        },
+        wordsToCleanseChanged() {
+            this.wordsToCleanse = this.cleanseKeywords(this.wordsToCleanse);
+            storage.set("wordsToCleanse", this.wordsToCleanse);
         },
         removeFromList(list, item) {
             this[list].splice(this[list].indexOf(this[item]), 1);
@@ -275,15 +309,19 @@ export default {
         });
 
         storage.get("blacklist", (error, data) => {
-            if (typeof data === "string") {
-                this.blacklist = data;
-            } else {
-                this.blacklist = "vector;illustration;pictogramm";
-            }
+            if (typeof data === "string") this.blacklist = data;
         });
 
         storage.get("requireds", (error, data) => {
-            if (typeof data === "string") this.requireds = data;
+            if (typeof data === "string") {
+                this.requireds = data;
+            } else {
+                this.requireds = "vector;illustration;pictogramm";
+            }
+        });
+
+        storage.get("wordsToCleanse", (error, data) => {
+            if (typeof data === "string") this.wordsToCleanse = data;
         });
 
         ipcRenderer.on("saveFolderCreated", (event, path) => {
@@ -327,6 +365,22 @@ export default {
                 this.keywordingStop = true;
                 setTimeout(() => {
                     this.switchKeywording();
+                }, 2000);
+            }
+        });
+
+        ipcRenderer.on("cleanserProgressChanged", (event, data) => {
+            this.cleanserProgress = data.progress;
+            this.cleanserMaxProgress = data.maxProgress;
+
+            if (
+                this.cleanserIsProcessing &&
+                !this.cleansingStop &&
+                data.progress === data.maxProgress
+            ) {
+                this.cleansingStop = true;
+                setTimeout(() => {
+                    this.switchCleansing();
                 }, 2000);
             }
         });
