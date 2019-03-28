@@ -107,12 +107,12 @@
                     <b-form-group label="Icon size:"
                         label-cols="2"
                         breakpoint="md"
-                        description="Maximum 1000"
+                        :description="'Maximum ' + documentSize "
                         horizontal>
                         <b-form-input placeholder="Icon size"
                             type="number"
                             min="1"
-                            max="1000"
+                            :max="documentSize"
                             :state="iconSizeIsCorrect"
                             v-model="iconSize">
                         </b-form-input>
@@ -143,7 +143,7 @@
                         </div>
                     </b-form-group>
                     <b-popover target="color-button"
-                               :show.sync="popoverShow">
+                        :show.sync="popoverShow">
                         <b-container fluid>
                             <b-row class="my-1">
                                 <b-col>
@@ -188,6 +188,83 @@
                      :unchecked-value="false">
                         Only JPEG
                     </b-form-checkbox>
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col md="8" offset-md="2" class="mb-3">
+                    <b-form-checkbox v-model="useText"
+                     :value="true"
+                     :unchecked-value="false">
+                        Use Text
+                    </b-form-checkbox>
+                </b-col>
+            </b-row>
+            <b-row align-v="center" :hidden="!useText">
+                <b-col md="8" offset-md="2">
+                    <b-form-group label="Text size:"
+                        label-cols="2"
+                        breakpoint="md"
+                        horizontal>
+                        <b-form-input placeholder="Text size"
+                            type="number"
+                            min="1"
+                            :state="svgTextSizeIsCorrect"
+                            v-model="svgTextSize">
+                        </b-form-input>
+                    </b-form-group>
+                </b-col>
+            </b-row>
+            <b-row align-v="center">
+                <b-col md="8" offset-md="2" class="text-center">
+                    <svg :width="svgSize" :height="svgSize">
+                        <rect :width="svgSize"
+                            :height="svgSize"
+                            style="fill:rgb(255,255,255);stroke-width:4;stroke:rgb(162,170,183)">
+                        </rect>
+                        <rect :x="iconOffsetOnCanvas"
+                            :y="iconOffsetOnCanvas"
+                            :width="iconSizeOnCanvas"
+                            :height="iconSizeOnCanvas"
+                            :style="'fill:' + (selectedColor || '#000000')"
+                            fill="rgba(0,0,0,0)"
+                            :stroke="selectedColor || '#000000'"
+                            stroke-opacity="0.3">
+                        </rect>
+                        <!--
+                        <image xlink:href="icon.svg"
+                            :width="iconSizeOnCanvas"
+                            :height="iconSizeOnCanvas"
+                            :transform="svgPreviewTransform"
+                            :fill="selectedColor || '#000000'"/>
+                        -->
+                        <svg :viewBox="[-iconOffsetOnCanvas, -iconOffsetOnCanvas, 344.1, 292.3].join(' ')"
+                            style="enable-background:new 0 0 344.1 292.3;"
+                            xml:space="preserve"
+                            :x="iconOffsetOnCanvas"
+                            :y="iconOffsetOnCanvas"
+                            :width="iconSizeOnCanvas"
+                            :height="iconSizeOnCanvas">
+                            <g>
+                                <path d="M192.9,7.3c-2.1-4.6-7.6-6.7-12.2-4.6l-6.6,3l22.6,10.2L192.9,7.3z"/>
+                                <path d="M338.6,79.6L163.3,0.8c-4.6-2.1-10.1,0-12.2,4.6l-5.9,13.2L5.4,81.6c-4.6,2.1-6.7,7.6-4.6,12.2l86.9,193.1
+                                    c2.1,4.6,7.6,6.7,12.2,4.6l74.2-33.4l-8.1-3.7l78.2,35.2c4.6,2.1,10.1,0,12.2-4.6l86.8-193.2C345.4,87.2,343.3,81.7,338.6,79.6z
+                                    M30.7,95l100.5-45.2L67.5,191.6l-39.8-88.5C26.3,100,27.6,96.4,30.7,95z M98.1,244.7c-3.1,1.4-6.7,0-8-3l-12-26.7l43.1,19.4
+                                    L98.1,244.7z M316.4,101.1l-62.3,138.6c-1.4,3.1-5,4.4-8,3.1l-143.3-64.4c-3.1-1.4-4.4-5-3.1-8L162,31.8c1.4-3.1,5-4.4,8-3.1
+                                    l143.3,64.4C316.4,94.5,317.7,98,316.4,101.1z"/>
+                                <path d="M233.3,136.4c-0.3-3.2-3.9-4.8-6.5-2.9L180,167.2c-2.6,1.9-6.2,0.2-6.5-2.9l-2.5-25.1c-0.3-3.2-3.9-4.8-6.5-2.9l-46.3,33.4
+                                    c-2.6,1.9-2.2,5.8,0.7,7.1l29.5,13.2l29.2,13.1l59.2,26.6c2.9,1.3,6.1-1,5.8-4.2L233.3,136.4z"/>
+                                <ellipse transform="matrix(0.4099 -0.9121 0.9121 0.4099 31.2143 212.466)" cx="179.8" cy="82.1" rx="14.7" ry="14.7"/>
+                            </g>
+                        </svg>
+                        <text :x="svgTextXOffset"
+                            :y="svgTextYOffset"
+                            :fill="selectedColor || '#000000'"
+                            :font-size="svgTextSize"
+                            :hidden="!useText"
+                            text-anchor="middle">
+                            {{svgText}}
+                        </text>
+                    </svg>
                 </b-col>
             </b-row>
             <b-row>

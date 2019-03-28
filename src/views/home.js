@@ -40,18 +40,25 @@ export default {
             cleanserProgress: 0,
             newTitle: undefined,
             spacesRegex: /\s+/,
-            popoverShow: false,
-            saveFlipped: false,
-            wordsToCleanse: "",
             addRequireds: true,
             cleanseTitle: true,
+            popoverShow: false,
+            documentSize: 1000,
+            saveFlipped: false,
+            wordsToCleanse: "",
+            svgTextOffset: 5,
             titleOnly: false,
             title: undefined,
-            backgrounds: [],
+            svgTextSize: 20,
+            svgText: "TEXT",
+            svgTextBBox: {},
             onlyJPEG: false,
+            backgrounds: [],
+            useText: false,
+            requireds: "",
             iconSize: 800,
             blacklist: "",
-            requireds: "",
+            svgSize: 300,
             swatches: [],
             titles: []
         };
@@ -67,7 +74,7 @@ export default {
             );
         },
         iconSizeIsCorrect() {
-            return this.iconSize > 0 && this.iconSize <= 1000;
+            return this.iconSize > 0 && this.iconSize <= this.documentSize;
         },
         keyworderIsReady() {
             return this.keyworderIconsFolder !== undefined && this.title !== "";
@@ -76,6 +83,39 @@ export default {
             return (
                 this.cleanserIconsFolder !== undefined &&
                 this.wordsToCleanse != ""
+            );
+        },
+        iconSizeOnCanvas() {
+            return (this.svgSize * this.iconSize) / this.documentSize;
+        },
+        iconOffsetOnCanvas() {
+            return (this.svgSize * (1 - this.iconSize / this.documentSize)) / 2;
+        },
+        svgTextXOffset() {
+            return this.svgSize / 2;
+        },
+        svgTextYOffset() {
+            return (
+                this.iconSizeOnCanvas +
+                this.iconOffsetOnCanvas +
+                this.svgTextOffset +
+                Number.parseFloat(this.svgTextSize)
+            );
+        },
+        svgTextSizeIsCorrect() {
+            return this.svgTextSize > 0;
+        },
+        svgPreviewTransform() {
+            return (
+                "translate(" +
+                (this.iconOffsetOnCanvas +
+                    (this.saveFlipped ? this.iconSizeOnCanvas : 0)) +
+                ", " +
+                this.iconOffsetOnCanvas +
+                ") " +
+                "scale(" +
+                (this.saveFlipped ? -1 : 1) +
+                ",1)"
             );
         }
     },
@@ -94,8 +134,6 @@ export default {
                 .join(";");
         },
         switchSwatch(value) {
-            console.log(value);
-            console.log(this.selectedColor);
             if (value === this.selectedColor) {
                 this.selectedColor = undefined;
             } else {
