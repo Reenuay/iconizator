@@ -18,52 +18,60 @@ export default {
             startKeywordingAfterProcessing: false,
             iconizatorIconsFolder: undefined,
             keyworderIconsFolder: undefined,
+            svgTextSelectedColor: undefined,
             cleanserIconsFolder: undefined,
             iconizatorIsProcessing: false,
             keyworderIsProcessing: false,
+            svgTextFontWeight: "normal",
             cleanserIsProcessing: false,
-            processedFolder: undefined,
             iconizatorIconsFolders: [],
+            processedFolder: undefined,
+            svgTextFontStyle: "normal",
             color: { hex: "#000000" },
-            iconizatorMaxProgress: 0,
             selectedColor: undefined,
+            iconizatorMaxProgress: 0,
             keyworderMaxProgress: 0,
-            cleanserMaxProgress: 0,
+            svgTextFont: undefined,
             illustrator: undefined,
+            svgTextUpperCase: true,
+            cleanserMaxProgress: 0,
+            background: undefined,
+            iconizatorProgress: 0,
             keywordingStop: false,
             processingStop: false,
-            iconizatorProgress: 0,
-            background: undefined,
             cleansingStop: false,
             keyworderProgress: 0,
             splitterRegex: /;|,/,
-            cleanserProgress: 0,
             newTitle: undefined,
-            spacesRegex: /\s+/,
+            cleanserProgress: 0,
+            documentSize: 1000,
+            wordsToCleanse: "",
             addRequireds: true,
             cleanseTitle: true,
             popoverShow: false,
-            documentSize: 1000,
             saveFlipped: false,
-            wordsToCleanse: "",
+            spacesRegex: /\s+/,
             svgTextOffset: 5,
             titleOnly: false,
             title: undefined,
-            svgTextSize: 20,
-            svgText: "TEXT",
-            svgTextBBox: {},
             onlyJPEG: false,
             backgrounds: [],
+            svgTextSize: 20,
+            svgTextBBox: {},
             useText: false,
             requireds: "",
             iconSize: 800,
             blacklist: "",
             svgSize: 300,
             swatches: [],
-            titles: []
+            titles: [],
+            fonts: []
         };
     },
     computed: {
+        svgText() {
+            return this.svgTextUpperCase ? "TEXT" : "text";
+        },
         iconizatorIsReady() {
             return (
                 this.iconSizeIsCorrect &&
@@ -98,12 +106,15 @@ export default {
             return (
                 this.iconSizeOnCanvas +
                 this.iconOffsetOnCanvas +
-                this.svgTextOffset +
+                Number.parseFloat(this.svgTextOffset) +
                 Number.parseFloat(this.svgTextSize)
             );
         },
         svgTextSizeIsCorrect() {
             return this.svgTextSize > 0;
+        },
+        svgTextOffsetIsCorrect() {
+            return this.svgTextOffset >= 0;
         },
         svgPreviewTransform() {
             return (
@@ -138,6 +149,13 @@ export default {
                 this.selectedColor = undefined;
             } else {
                 this.selectedColor = value;
+            }
+        },
+        switchTextSwatch(value) {
+            if (value === this.svgTextSelectedColor) {
+                this.svgTextSelectedColor = undefined;
+            } else {
+                this.svgTextSelectedColor = value;
             }
         },
         onOk() {
@@ -426,5 +444,11 @@ export default {
         ipcRenderer.on("alert", (event, data) => {
             console.log(data);
         });
+
+        ipcRenderer.on("fonts", (event, fonts) => {
+            this.fonts = fonts;
+        });
+
+        ipcRenderer.send("fonts");
     }
 };

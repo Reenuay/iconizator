@@ -15,6 +15,7 @@ import {
     createProtocol,
     installVueDevtools
 } from "vue-cli-plugin-electron-builder/lib";
+import SystemFonts from "system-font-families";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -417,6 +418,17 @@ ipcMain.on("startCleansing", async (e, data) => {
 
 ipcMain.on("stopCleansing", () => {
     stopCleansing = true;
+});
+
+ipcMain.on("fonts", () => {
+    new SystemFonts().getFonts().then(
+        res => {
+            win.send("fonts", res);
+        },
+        err => {
+            win.send("alert", err);
+        }
+    );
 });
 
 // Exit cleanly on request from parent process in development mode.

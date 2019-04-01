@@ -213,6 +213,69 @@
                         </b-form-input>
                     </b-form-group>
                 </b-col>
+                <b-col md="8" offset-md="2">
+                    <b-form-group label="Text offset:"
+                        label-cols="2"
+                        breakpoint="md"
+                        horizontal>
+                        <b-form-input placeholder="Text offset"
+                            type="number"
+                            min="0"
+                            :state="svgTextOffsetIsCorrect"
+                            v-model="svgTextOffset">
+                        </b-form-input>
+                    </b-form-group>
+                </b-col>
+                <b-col md="8" offset-md="2">
+                    <b-form-group label="Text color:"
+                        label-cols="2"
+                        breakpoint="md"
+                        horizontal>
+                        <swatches :colors="swatches"
+                            @input="switchTextSwatch"
+                            max-height="80"
+                            shapes="circles"
+                            :value="svgTextSelectedColor"
+                            inline>
+                        </swatches>
+                    </b-form-group>
+                </b-col>
+                <b-col md="8" offset-md="2">
+                    <b-form-group label="Text font:"
+                        label-cols="2"
+                        breakpoint="md"
+                        horizontal>
+                        <b-form-select v-model="svgTextFont" md="8">
+                            <option :value="undefined">Choose a font...</option>
+                            <option v-for="f in fonts"
+                                :value="f"
+                                :key="f">
+                                {{f}}
+                            </option>
+                        </b-form-select>
+                    </b-form-group>
+                </b-col>
+                <b-col md="8" offset-md="2">
+                    <b-form-checkbox v-model="svgTextFontWeight"
+                    :value="'bold'"
+                    :unchecked-value="'normal'">
+                        Bold
+                    </b-form-checkbox>
+                </b-col>
+                <b-col md="8" offset-md="2">
+                    <b-form-checkbox v-model="svgTextFontStyle"
+                    :value="'italic'"
+                    :unchecked-value="'normal'">
+                        Italic
+                    </b-form-checkbox>
+                </b-col>
+                <b-col md="8" offset-md="2">
+                    <b-form-checkbox v-model="svgTextUpperCase"
+                    :value="true"
+                    :unchecked-value="false">
+                        Upper Case
+                    </b-form-checkbox>
+                </b-col>
             </b-row>
             <b-row align-v="center">
                 <b-col md="8" offset-md="2" class="text-center">
@@ -221,13 +284,6 @@
                             :height="svgSize"
                             style="fill:rgb(255,255,255);stroke-width:4;stroke:rgb(162,170,183)">
                         </rect>
-                        <!--
-                        <image xlink:href="icon.svg"
-                            :width="iconSizeOnCanvas"
-                            :height="iconSizeOnCanvas"
-                            :transform="svgPreviewTransform"
-                            :fill="selectedColor || '#000000'"/>
-                        -->
                         <svg :viewBox="[0, 0, 344.1, 292.3].join(' ')"
                             style="enable-background:new 0 0 344.1 292.3;"
                             xml:space="preserve"
@@ -249,10 +305,13 @@
                         </svg>
                         <text :x="svgTextXOffset"
                             :y="svgTextYOffset"
-                            :fill="selectedColor || '#000000'"
+                            :fill="svgTextSelectedColor || '#000000'"
                             :font-size="svgTextSize"
                             :hidden="!useText"
-                            text-anchor="middle">
+                            text-anchor="middle"
+                            :style="svgTextFont ? 'font-family:' + svgTextFont : ''"
+                            :font-weight="svgTextFontWeight"
+                            :font-style="svgTextFontStyle">
                             {{svgText}}
                         </text>
                     </svg>
