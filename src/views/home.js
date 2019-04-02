@@ -51,12 +51,12 @@ export default {
             popoverShow: false,
             saveFlipped: false,
             spacesRegex: /\s+/,
-            svgTextOffset: 5,
+            svgTextOffset: 50,
             titleOnly: false,
             title: undefined,
             onlyJPEG: false,
             backgrounds: [],
-            svgTextSize: 20,
+            svgTextSize: 100,
             svgTextBBox: {},
             useText: false,
             requireds: "",
@@ -102,12 +102,17 @@ export default {
         svgTextXOffset() {
             return this.svgSize / 2;
         },
+        svgTextCanvasSize() {
+            return (this.svgSize * this.svgTextSize) / this.documentSize;
+        },
+        svgTextCanvasOffset() {
+            return (this.svgSize * this.svgTextOffset) / this.documentSize;
+        },
         svgTextYOffset() {
             return (
                 this.iconSizeOnCanvas +
                 this.iconOffsetOnCanvas +
-                Number.parseFloat(this.svgTextOffset) +
-                Number.parseFloat(this.svgTextSize)
+                this.svgTextCanvasOffset
             );
         },
         svgTextSizeIsCorrect() {

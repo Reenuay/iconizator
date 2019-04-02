@@ -306,7 +306,7 @@
                         <text :x="svgTextXOffset"
                             :y="svgTextYOffset"
                             :fill="svgTextSelectedColor || '#000000'"
-                            :font-size="svgTextSize"
+                            :font-size="svgTextCanvasSize"
                             :hidden="!useText"
                             text-anchor="middle"
                             :style="svgTextFont ? 'font-family:' + svgTextFont : ''"
