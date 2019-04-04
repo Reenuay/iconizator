@@ -19,10 +19,8 @@ export default {
             iconizatorIconsFolder: undefined,
             keyworderIconsFolder: undefined,
             svgTextSelectedColor: undefined,
-            cleanserIconsFolder: undefined,
             iconizatorIsProcessing: false,
             keyworderIsProcessing: false,
-            cleanserIsProcessing: false,
             iconizatorIconsFolders: [],
             processedFolder: undefined,
             svgTextFontStyle: "Regular",
@@ -33,7 +31,6 @@ export default {
             svgTextFont: undefined,
             illustrator: undefined,
             svgTextUpperCase: true,
-            cleanserMaxProgress: 0,
             background: undefined,
             iconizatorProgress: 0,
             keywordingStop: false,
@@ -42,11 +39,8 @@ export default {
             keyworderProgress: 0,
             splitterRegex: /;|,/,
             newTitle: undefined,
-            cleanserProgress: 0,
             documentSize: 1000,
-            wordsToCleanse: "",
             addRequireds: true,
-            cleanseTitle: true,
             popoverShow: false,
             saveFlipped: false,
             spacesRegex: /\s+/,
@@ -85,12 +79,6 @@ export default {
         },
         keyworderIsReady() {
             return this.keyworderIconsFolder !== undefined && this.title !== "";
-        },
-        cleanserIsReady() {
-            return (
-                this.cleanserIconsFolder !== undefined &&
-                this.wordsToCleanse != ""
-            );
         },
         iconSizeOnCanvas() {
             return (this.svgSize * this.iconSize) / this.documentSize;
@@ -223,23 +211,6 @@ export default {
                 this.keyworderMaxProgress = 0;
                 this.keywordingStop = false;
                 ipcRenderer.send("stopKeywording");
-            }
-        },
-        switchCleansing() {
-            if (!this.cleanserIsProcessing) {
-                this.cleanserIsProcessing = true;
-
-                ipcRenderer.send("startCleansing", {
-                    iconsFolder: this.cleanserIconsFolder,
-                    wordsToCleanse: this.splitKeywords(this.wordsToCleanse),
-                    cleanseTitle: this.cleanseTitle
-                });
-            } else {
-                this.cleanserIsProcessing = false;
-                this.cleanserProgress = 0;
-                this.cleanserMaxProgress = 0;
-                this.cleansingStop = false;
-                ipcRenderer.send("stopCleansing");
             }
         },
         openDialog(prop, mode, filters = []) {
@@ -489,22 +460,6 @@ export default {
                 this.keywordingStop = true;
                 setTimeout(() => {
                     this.switchKeywording();
-                }, 2000);
-            }
-        });
-
-        ipcRenderer.on("cleanserProgressChanged", (event, data) => {
-            this.cleanserProgress = data.progress;
-            this.cleanserMaxProgress = data.maxProgress;
-
-            if (
-                this.cleanserIsProcessing &&
-                !this.cleansingStop &&
-                data.progress === data.maxProgress
-            ) {
-                this.cleansingStop = true;
-                setTimeout(() => {
-                    this.switchCleansing();
                 }, 2000);
             }
         });
