@@ -245,29 +245,29 @@
                         label-cols="2"
                         breakpoint="md"
                         horizontal>
-                        <b-form-select v-model="svgTextFont" md="8">
+                        <b-form-select v-model="svgTextFont" md="8" @input="fontChanged()">
                             <option :value="undefined">Choose a font...</option>
                             <option v-for="f in fonts"
                                 :value="f"
-                                :key="f">
-                                {{f}}
+                                :key="f.family">
+                                {{f.family}}
                             </option>
                         </b-form-select>
                     </b-form-group>
                 </b-col>
                 <b-col md="8" offset-md="2">
-                    <b-form-checkbox v-model="svgTextFontWeight"
-                    :value="'bold'"
-                    :unchecked-value="'normal'">
-                        Bold
-                    </b-form-checkbox>
-                </b-col>
-                <b-col md="8" offset-md="2">
-                    <b-form-checkbox v-model="svgTextFontStyle"
-                    :value="'italic'"
-                    :unchecked-value="'normal'">
-                        Italic
-                    </b-form-checkbox>
+                    <b-form-group label="Font style:"
+                        label-cols="2"
+                        breakpoint="md"
+                        horizontal>
+                        <b-form-select v-model="svgTextFontStyle" md="8">
+                            <option v-for="s in (svgTextFont ? svgTextFont.subFamilies : [])"
+                                :value="s"
+                                :key="s">
+                                {{s}}
+                            </option>
+                        </b-form-select>
+                    </b-form-group>
                 </b-col>
                 <b-col md="8" offset-md="2">
                     <b-form-checkbox v-model="svgTextUpperCase"
@@ -309,9 +309,7 @@
                             :font-size="svgTextCanvasSize"
                             :hidden="!useText"
                             text-anchor="middle"
-                            :style="svgTextFont ? 'font-family:' + svgTextFont : ''"
-                            :font-weight="svgTextFontWeight"
-                            :font-style="svgTextFontStyle">
+                            :style="svgTextFont ? 'font-family:' + svgTextFont.family : ''">
                             {{svgText}}
                         </text>
                     </svg>

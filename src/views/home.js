@@ -22,11 +22,10 @@ export default {
             cleanserIconsFolder: undefined,
             iconizatorIsProcessing: false,
             keyworderIsProcessing: false,
-            svgTextFontWeight: "normal",
             cleanserIsProcessing: false,
             iconizatorIconsFolders: [],
             processedFolder: undefined,
-            svgTextFontStyle: "normal",
+            svgTextFontStyle: "Regular",
             color: { hex: "#000000" },
             selectedColor: undefined,
             iconizatorMaxProgress: 0,
@@ -184,7 +183,18 @@ export default {
                     saveFlipped: this.saveFlipped,
                     color: this.selectedColor,
                     iconSize: this.iconSize,
-                    onlyJPEG: this.onlyJPEG
+                    onlyJPEG: this.onlyJPEG,
+                    textData: this.useText
+                        ? {
+                              font: this.svgTextFont.postscriptNames[
+                                  this.svgTextFontStyle
+                              ],
+                              size: this.svgTextSize,
+                              offset: this.svgTextOffset,
+                              color: this.svgTextSelectedColor || "#000000",
+                              upper: this.svgTextUpperCase
+                          }
+                        : false
                 });
             } else {
                 this.iconizatorIsProcessing = false;
@@ -285,9 +295,38 @@ export default {
                 this.title = this.newTitle;
                 this.newTitle = undefined;
             }
+        },
+        fontChanged() {
+            this.svgTextFontStyle = this.svgTextFont
+                ? this.svgTextFont.subFamilies[0]
+                : undefined;
         }
     },
     watch: {
+        svgTextSize(value) {
+            storage.set("svgTextSize", value);
+        },
+
+        svgTextOffset(value) {
+            storage.set("svgTextOffset", value);
+        },
+
+        svgTextSelectedColor(value) {
+            storage.set("svgTextSelectedColor", value);
+        },
+
+        svgTextFont(value) {
+            storage.set("svgTextFont", value);
+        },
+
+        svgTextFontStyle(value) {
+            storage.set("svgTextFontStyle", value);
+        },
+
+        svgTextUpperCase(value) {
+            storage.set("svgTextUpperCase", value);
+        },
+
         iconizatorIconsFolder(value) {
             storage.set("iconizatorIconsFolder", value);
         },
@@ -329,6 +368,30 @@ export default {
         }
     },
     created() {
+        storage.get("svgTextSize", (error, data) => {
+            if (typeof data === "string") this.svgTextSize = data;
+        });
+
+        storage.get("svgTextOffset", (error, data) => {
+            if (typeof data === "string") this.svgTextOffset = data;
+        });
+
+        storage.get("svgTextSelectedColor", (error, data) => {
+            if (typeof data === "string") this.svgTextSelectedColor = data;
+        });
+
+        storage.get("svgTextFont", (error, data) => {
+            if (typeof data === "object") this.svgTextFont = data;
+        });
+
+        storage.get("svgTextFontStyle", (error, data) => {
+            if (typeof data === "string") this.svgTextFontStyle = data;
+        });
+
+        storage.get("svgTextUpperCase", (error, data) => {
+            if (typeof data === "string") this.svgTextUpperCase = data;
+        });
+
         storage.get("iconizatorIconsFolder", (error, data) => {
             if (typeof data === "string") this.iconizatorIconsFolder = data;
         });

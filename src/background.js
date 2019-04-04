@@ -133,6 +133,7 @@ ipcMain.on("startProcessing", (e, data) => {
         color: data.color,
         saveFlipped: data.saveFlipped,
         onlyJPEG: data.onlyJPEG,
+        textData: JSON.stringify(data.textData),
 
         saveFolder: saveFolder.replace(/\\/g, "\\\\"),
         progressFile: progressFile.replace(/\\/g, "\\\\"),
@@ -421,7 +422,7 @@ ipcMain.on("stopCleansing", () => {
 });
 
 ipcMain.on("fonts", () => {
-    new SystemFonts().getFonts().then(
+    new SystemFonts().getFontsExtended().then(
         res => {
             win.send("fonts", res);
         },

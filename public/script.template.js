@@ -8,6 +8,7 @@ var iconSize = parseInt("{{iconSize}}", 10);
 var color = "{{color}}";
 var saveFlipped = "{{saveFlipped}}" === "true";
 var onlyJPEG = "{{onlyJPEG}}" === "true";
+var textData = eval('(function() { return {{{textData}}}; })()');
 
 // Predefined constants
 var jpegSize = 5000;
@@ -36,11 +37,7 @@ var hexes = {
 var newColor;
 
 if (color) {
-    color = color.substr(1, 6);
-    newColor = new RGBColor();
-    newColor.red = hexes[color[0]] * 16 + hexes[color[1]];
-    newColor.green = hexes[color[2]] * 16 + hexes[color[3]];
-    newColor.blue = hexes[color[4]] * 16 + hexes[color[5]];
+    newColor = CreateColor(color);
 }
 
 // Create preset
@@ -72,6 +69,17 @@ background.left = (targetDoc.width - background.width) / 2;
 var files = (new Folder(iconsFolder)).getFiles(checkFile);
 
 writeProgress(0, files.length);
+
+var preIndex = /^\d+-(?=(\w|\d)+)/g;
+var extension = /\..+$/g;
+var copyNumber = /(_|\()\d+(_|\))$/g;
+var postIndex = /(-\d+)$/gi;
+var nonLatinOrNumber = /[^a-zA-Z0-9]+/gi;
+var multipleSpaces = /\s+/gi;
+var bracketsAndWhitespaces = /(\(|\)|%20)/g;
+var trim = /(^\s+)|(\s+$)/g;
+
+var outline;
 
 for (var index in files) {
 
@@ -109,9 +117,50 @@ for (var index in files) {
     clipScan(targetDoc);
 
     // Create file names
-    var fileName = file.name
-        .replace(/\.[a-z]*$/g, "")
-        .replace(/(\(|\)|%20)/g, "_");
+    var fileName = file.displayName
+        .replace(extension, "")
+        .replace(bracketsAndWhitespaces, "_");
+
+    // Text
+    if (textData) {
+        var contents = file.displayName
+            .replace(preIndex, "")
+            .replace(extension, "")
+            .replace(copyNumber, "")
+            .replace(postIndex, "")
+            .replace(nonLatinOrNumber, " ")
+            .replace(multipleSpaces, " ")
+            .replace(trim, "");
+
+        var pointTextRef = targetDoc.textFrames.add();
+
+        pointTextRef.contents = textData.upper
+            ? contents.toUpperCase()
+            : contents.toLowerCase()
+            ;
+
+        pointTextRef.textRange.characterAttributes.fillColor
+            = CreateColor(textData.color);
+
+        pointTextRef.textRange.characterAttributes.size = textData.size;
+
+        var font = textFonts.getByName(textData.font);
+
+        if (font) {
+            pointTextRef.textRange.characterAttributes.textFont = font;
+        }
+
+        pointTextRef.selected = true;
+        redraw();
+
+        outline = pointTextRef.createOutline();
+
+        outline.left = (targetDoc.width - outline.width) / 2;
+        outline.top = icon.top -
+            icon.height -
+            (textData.offset * 1) +
+            (outline.height / 2);
+    }
 
     var epsName = pathJoin(saveFolder, fileName + ".eps");
     var jpegName = pathJoin(saveFolder, fileName + ".jpeg");
@@ -145,6 +194,12 @@ for (var index in files) {
 
     // Remove icon from artboard
     icon.remove();
+
+    // Remove text from artboard
+    if (outline) {
+        outline.remove();
+        outline = undefined;
+    }
 
     // Report progress
     writeProgress(parseInt(index, 10) + 1 , files.length);
@@ -216,4 +271,13 @@ function checkMediator() {
         return content.length > 0;
     }
     return false;
+}
+
+function CreateColor(hex) {
+    hex = hex.substr(1, 6);
+    var res = new RGBColor();
+    res.red = hexes[hex[0]] * 16 + hexes[hex[1]];
+    res.green = hexes[hex[2]] * 16 + hexes[hex[3]];
+    res.blue = hexes[hex[4]] * 16 + hexes[hex[5]];
+    return res;
 }
