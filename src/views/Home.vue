@@ -2,6 +2,9 @@
     <div>
         <b-navbar type="dark" variant="dark" sticky>
             <b-navbar-brand>Iconizator</b-navbar-brand>
+            <b-navbar-nav>
+                <b-nav-item right>{{appVersion}}</b-nav-item>
+            </b-navbar-nav>
         </b-navbar>
         <b-container class="my-3" fluid>
             <b-row>

@@ -62,6 +62,9 @@ export default {
         };
     },
     computed: {
+        appVersion() {
+            return require("electron").remote.app.getVersion();
+        },
         svgText() {
             return this.svgTextUpperCase ? "TEXT" : "text";
         },

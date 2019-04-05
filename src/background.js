@@ -333,6 +333,8 @@ ipcMain.on("startKeywording", async (e, data) => {
                 });
             }
         }
+    } else {
+        win.send("alert", "Can't open exiftool");
     }
 
     ep.close();
