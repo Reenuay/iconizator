@@ -31,7 +31,6 @@ const mediatorFile = path.resolve(path.join(".", "mediator.txt"));
 
 // Mediator variables
 let stopKeywording = false;
-let stopCleansing = false;
 
 // Standard scheme must be registered before the app is ready
 protocol.registerStandardSchemes(["app"], {
@@ -233,21 +232,27 @@ ipcMain.on("startKeywording", async (e, data) => {
 
             if (!data.titleOnly) {
                 // Get pictures
-                let res = await axios.post(
-                    url,
-                    querystring.stringify({
-                        search_term: keyword,
-                        image_type: "photo",
-                        language: "en",
-                        num_results: 10,
-                        only_models: "on"
-                    }),
-                    {
-                        headers: {
-                            "content-type": "application/x-www-form-urlencoded"
+                let res;
+                try {
+                    res = await axios.post(
+                        url,
+                        querystring.stringify({
+                            search_term: keyword,
+                            image_type: "photo",
+                            language: "en",
+                            num_results: 10,
+                            only_models: "on"
+                        }),
+                        {
+                            headers: {
+                                "content-type":
+                                    "application/x-www-form-urlencoded"
+                            }
                         }
-                    }
-                );
+                    );
+                } catch (error) {
+                    win.send("alert", error);
+                }
 
                 if (stopKeywording) break;
 
