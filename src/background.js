@@ -263,18 +263,24 @@ ipcMain.on("startKeywording", async (e, data) => {
                 $(".singleCell img").each((i, img) => {
                     imgIds.push($(img).attr("id"));
                 });
-                // Get keywords
-                res = await axios.post(
-                    url,
-                    querystring.stringify({
-                        "imageid[]": imgIds
-                    }),
-                    {
-                        headers: {
-                            "content-type": "application/x-www-form-urlencoded"
+
+                try {
+                    // Get keywords
+                    res = await axios.post(
+                        url,
+                        querystring.stringify({
+                            "imageid[]": imgIds
+                        }),
+                        {
+                            headers: {
+                                "content-type":
+                                    "application/x-www-form-urlencoded"
+                            }
                         }
-                    }
-                );
+                    );
+                } catch (error) {
+                    win.send("alert", error);
+                }
 
                 // Parse them
                 $ = cheerio.load(res.data);
