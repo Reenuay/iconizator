@@ -203,26 +203,7 @@ ipcMain.on("startKeywording", async (e, data) => {
         maxProgress: maxProgress
     });
 
-    let exiftoolBin =
-        process.platform === "win32"
-            ? path.join(
-                  "node_modules",
-                  "exiftool.exe",
-                  "vendor",
-                  "exiftool.exe"
-              )
-            : path.join("node_modules", "exiftool.pl", "vendor", "exiftool");
-
-    if (!isDevelopment && process.platform === "win32")
-        exiftoolBin = path.join(
-            process.resourcesPath,
-            "app.asar.unpacked",
-            exiftoolBin
-        );
-
-    exiftoolBin = path.resolve(exiftoolBin);
-
-    const ep = new exiftool.ExiftoolProcess(exiftoolBin);
+    const ep = new exiftool.ExiftoolProcess(getExiftool());
 
     if (await ep.open()) {
         for (const keyword in keywords) {
@@ -368,4 +349,8 @@ if (isDevelopment) {
             app.quit();
         });
     }
+}
+
+function getExiftool() {
+    return path.join(__dirname, "..", "binaries", "exiftool.exe");
 }
