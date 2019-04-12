@@ -9,8 +9,15 @@ import cheerio from "cheerio";
 import exiftool from "node-exiftool";
 import querystring from "querystring";
 import moment from "moment";
-import { execFile as child } from "child_process";
-import { app, protocol, BrowserWindow, ipcMain } from "electron";
+import {
+    execFile as child
+} from "child_process";
+import {
+    app,
+    protocol,
+    BrowserWindow,
+    ipcMain
+} from "electron";
 import {
     createProtocol,
     installVueDevtools
@@ -144,7 +151,7 @@ ipcMain.on("startProcessing", (e, data) => {
     fs.writeFileSync(scriptPath, content);
 
     // Start Illustrator
-    child(data.illustrator, [scriptPath], function(err, data) {
+    child(data.illustrator, [scriptPath], function (err, data) {
         console.log(err);
         console.log(data.toString());
     });
@@ -223,11 +230,9 @@ ipcMain.on("startKeywording", async (e, data) => {
                             language: "en",
                             num_results: 10,
                             only_models: "on"
-                        }),
-                        {
+                        }), {
                             headers: {
-                                "content-type":
-                                    "application/x-www-form-urlencoded"
+                                "content-type": "application/x-www-form-urlencoded"
                             }
                         }
                     );
@@ -251,11 +256,9 @@ ipcMain.on("startKeywording", async (e, data) => {
                         url,
                         querystring.stringify({
                             "imageid[]": imgIds
-                        }),
-                        {
+                        }), {
                             headers: {
-                                "content-type":
-                                    "application/x-www-form-urlencoded"
+                                "content-type": "application/x-www-form-urlencoded"
                             }
                         }
                     );
@@ -271,15 +274,25 @@ ipcMain.on("startKeywording", async (e, data) => {
                 });
 
                 // Create meta
+                if (data.useWhiteList) {
+                    const whiteList = fs.readFileSync(path.join(__static, "en_US.txt"))
+                        .toString()
+                        .split("\n");
+
+                    keywordArray = keywordArray.filter(
+                        v => v.split(/\s+/).every(w => whiteList.includes(w))
+                    );
+                }
+
                 keywordArray = data.requireds.concat(
                     keywordArray
-                        .filter(
-                            (v, i, a) =>
-                                a.indexOf(v) === i && //unqiue
-                                !data.blacklist.includes(v) && //not in black list
-                                !data.requireds.includes(v) //not in requireds
-                        )
-                        .slice(0, 50 - data.requireds.length)
+                    .filter(
+                        (v, i, a) =>
+                        a.indexOf(v) === i && //unqiue
+                        !data.blacklist.includes(v) && //not in black list
+                        !data.requireds.includes(v) //not in requireds
+                    )
+                    .slice(0, 50 - data.requireds.length)
                 );
             }
 

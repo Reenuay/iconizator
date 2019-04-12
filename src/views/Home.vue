@@ -476,6 +476,15 @@
                 </b-col>
             </b-row>
             <b-row>
+                <b-col md="8" offset-md="2" class="mb-3">
+                    <b-form-checkbox v-model="useWhiteList"
+                     :value="true"
+                     :unchecked-value="false">
+                        Use white list
+                    </b-form-checkbox>
+                </b-col>
+            </b-row>
+            <b-row>
                 <b-col md="8" offset-md="2" class="text-center mb-3">
                     <b-btn :disabled="!keyworderIsReady"
                         :variant="keyworderIsProcessing ? 'danger' : 'primary'"
@@ -501,6 +510,7 @@
                     </b-progress>
                 </b-col>
             </b-row>
+
         </b-container>
     </div>
 </template>
