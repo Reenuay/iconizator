@@ -29,6 +29,9 @@ let watcher;
 // Mediator file
 const mediatorFile = path.resolve(path.join(".", "mediator.txt"));
 
+// Error file
+const errorFile = path.resolve(path.join(".", "error.txt"));
+
 // Mediator variables
 let stopKeywording = false;
 
@@ -206,8 +209,22 @@ ipcMain.on("startKeywording", async (e, data) => {
     const ep = new exiftool.ExiftoolProcess(getExiftool());
 
     if (await ep.open()) {
+        let whiteList = [];
+        if (data.useWhiteList) {
+            whiteList = fs
+                .readFileSync(path.join(__static, "en_US.txt"))
+                .toString()
+                .split("\n");
+        }
+
         for (const keyword in keywords) {
             if (stopKeywording) break;
+
+            if (data.useWhiteList) {
+                if (!whiteList.includes(keyword)) {
+                    fs.appendFileSync(errorFile, `${keyword}\n`);
+                }
+            }
 
             let keywordArray = [];
 
@@ -271,29 +288,31 @@ ipcMain.on("startKeywording", async (e, data) => {
                 });
 
                 // Create meta
-                if (data.useWhiteList) {
-                    const whiteList = fs
-                        .readFileSync(path.join(__static, "en_US.txt"))
-                        .toString()
-                        .split("\n");
-
-                    keywordArray = keywordArray.filter(v =>
-                        v.split(/\s+/).every(w => whiteList.includes(w))
-                    );
-                }
-
                 keywordArray = data.requireds
                     .map(r => r.replace(/{{i}}/g, keyword))
-                    .concat(
-                        keywordArray
-                            .filter(
-                                (v, i, a) =>
-                                    a.indexOf(v) === i && //unqiue
-                                    !data.blacklist.includes(v) && //not in black list
-                                    !data.requireds.includes(v) //not in requireds
-                            )
-                            .slice(0, 50 - data.requireds.length)
-                    );
+                    .concat(keywordArray)
+                    .filter((v, i, a) => {
+                        const elements = v.split(/\s+/);
+                        const uniqElementsCount = Object.keys(
+                            elements.reduce((res, e) => {
+                                res[e] = 1;
+                                return res;
+                            }, {})
+                        ).length;
+
+                        return (
+                            a.indexOf(v) === i && // unqiue
+                            !data.blacklist.includes(v) && // not in black list
+                            (!data.useWhiteList ||
+                                (data.useWhiteList &&
+                                    elements.every(e =>
+                                        whiteList.includes(e)
+                                    ))) && // is in whitelist
+                            elements.length === uniqElementsCount // all elements in word are uniq
+                        );
+                    });
+
+                keywordArray = removePatrons(keywordArray, 4);
             }
 
             if (stopKeywording) break;
@@ -366,4 +385,62 @@ if (isDevelopment) {
 
 function getExiftool() {
     return path.join(__dirname, "..", "binaries", "exiftool.exe");
+}
+
+function removePatrons(list, n) {
+    if (n === 0) return [];
+
+    const words = {};
+    const elements = {};
+
+    function keys(obj) {
+        return Object.keys(obj);
+    }
+
+    function keysCount(obj) {
+        return keys(obj).length;
+    }
+
+    function values(obj) {
+        return Object.values(obj);
+    }
+
+    function violatersCount(word) {
+        return values(word).reduce((acc, el) => acc + (keysCount(el) > n), 0);
+    }
+
+    list.forEach(word => {
+        words[word] = {};
+
+        word.split(/\s+/).forEach(element => {
+            if (!elements[element]) elements[element] = {};
+
+            words[word][element] = elements[element];
+            elements[element][word] = words[word];
+        });
+    });
+
+    keys(elements).forEach(element => {
+        const occurencies = keysCount(elements[element]);
+        if (occurencies <= n) return;
+
+        keys(elements[element])
+            .sort((a, b) => {
+                const aWord = words[a];
+                const bWord = words[b];
+
+                let cmp = violatersCount(aWord) - violatersCount(bWord);
+
+                if (cmp === 0) cmp = keysCount(aWord) - keysCount(bWord);
+
+                return cmp;
+            })
+            .slice(n)
+            .forEach(word => {
+                values(words[word]).forEach(element => delete element[word]);
+                delete words[word];
+            });
+    });
+
+    return list.filter(word => words[word]);
 }
