@@ -39,7 +39,7 @@ export default {
             keyworderProgress: 0,
             splitterRegex: /;|,/,
             newTitle: undefined,
-            useWhiteList: false,
+            useWhiteList: true,
             addRequireds: true,
             popoverShow: false,
             saveFlipped: false,
