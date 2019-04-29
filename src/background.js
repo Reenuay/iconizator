@@ -187,7 +187,8 @@ ipcMain.on("startKeywording", async (e, data) => {
             .replace(postIndex, "")
             .replace(nonLatinOrNumber, " ")
             .replace(multipleSpaces, " ")
-            .trim();
+            .trim()
+            .toLowerCase();
 
         // Cleaned is empty
         if (cleaned.match(/^\s*$/gi)) continue;
@@ -312,7 +313,7 @@ ipcMain.on("startKeywording", async (e, data) => {
                         );
                     });
 
-                keywordArray = removePatrons(keywordArray, 4);
+                keywordArray = removePatrons(keywordArray, 4).splice(0, 50);
             }
 
             if (stopKeywording) break;
