@@ -76,7 +76,7 @@ var copyNumber = /(_|\()\d+(_|\))$/g;
 var postIndex = /(-\d+)$/gi;
 var nonLatinOrNumber = /[^a-zA-Z0-9]+/gi;
 var multipleSpaces = /\s+/gi;
-var bracketsAndWhitespaces = /(\(|\)|%20)/g;
+var bracketsAndWhitespaces = /(\(|\)|%20|\s)/g;
 var trim = /(^\s+)|(\s+$)/g;
 
 var outline;
