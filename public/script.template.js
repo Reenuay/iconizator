@@ -77,7 +77,12 @@ var postIndex = /(-\d+)$/gi;
 var nonLatinOrNumber = /[^a-zA-Z0-9]+/gi;
 var multipleSpaces = /\s+/gi;
 var bracketsAndWhitespaces = /(\(|\)|%20|\s)/g;
-var trim = /(^\s+)|(\s+$)/g;
+var leadingAndTrailingWhitespaces = /(^\s+)|(\s+$)/g;
+var singleSpace = /\s/g;
+
+var emptyString = "";
+var singleSpaceString = " ";
+var signleUnderlineString = "_";
 
 var outline;
 
@@ -118,26 +123,28 @@ for (var index in files) {
 
     // Create file names
     var fileName = file.displayName
-        .replace(extension, "")
-        .replace(bracketsAndWhitespaces, "_");
+        .replace(extension, emptyString)
+        .replace(bracketsAndWhitespaces, signleUnderlineString);
 
     // Text
     if (textData) {
         var contents = file.displayName
-            .replace(preIndex, "")
-            .replace(extension, "")
-            .replace(copyNumber, "")
-            .replace(postIndex, "")
-            .replace(nonLatinOrNumber, " ")
-            .replace(multipleSpaces, " ")
-            .replace(trim, "");
+            .replace(preIndex, emptyString)
+            .replace(extension, emptyString)
+            .replace(copyNumber, emptyString)
+            .replace(postIndex, emptyString)
+            .replace(nonLatinOrNumber, singleSpaceString)
+            .replace(multipleSpaces, singleSpaceString)
+            .replace(leadingAndTrailingWhitespaces, emptyString);
 
-        var pointTextRef = targetDoc.textFrames.add();
-
-        pointTextRef.contents = textData.upper
+        contents = textData.upper
             ? contents.toUpperCase()
             : contents.toLowerCase()
             ;
+
+        var pointTextRef = targetDoc.textFrames.add();
+
+        pointTextRef.contents = contents;
 
         pointTextRef.textRange.characterAttributes.fillColor
             = CreateColor(textData.color);
@@ -150,8 +157,41 @@ for (var index in files) {
             pointTextRef.textRange.characterAttributes.textFont = font;
         }
 
+        pointTextRef.paragraphs[0].paragraphAttributes.justification = Justification.CENTER;
+
         pointTextRef.selected = true;
         redraw();
+
+        var textSpacePercentage = 0.9;
+        if (
+            pointTextRef.width > docSize * textSpacePercentage
+            && contents.match(singleSpace)
+        ) {
+            var ratio = Number.POSITIVE_INFINITY;
+            var spaceIndex = -1;
+            var match;
+            var middle = Math.ceil(contents.length / 2);
+
+            while (match = singleSpace.exec(contents)) {
+                var newRatio = Math.abs((match.index + 1) - middle);
+
+                if (ratio >= newRatio) {
+                    ratio = newRatio;
+                    spaceIndex = match.index;
+                }
+                else {
+                    break;
+                }
+            }
+
+            singleSpace.lastIndex = 0;
+
+            if (spaceIndex > -1) {
+                contents = contents.substr(0, spaceIndex) + "\n" + contents.substr(spaceIndex + 1);
+                pointTextRef.contents = contents;
+                redraw();
+            }
+        }
 
         outline = pointTextRef.createOutline();
 
