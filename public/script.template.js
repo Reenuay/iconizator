@@ -7,12 +7,13 @@ var saveFolder = "{{saveFolder}}";
 var iconSize = parseInt("{{iconSize}}", 10);
 var color = "{{color}}";
 var saveFlipped = "{{saveFlipped}}" === "true";
-var onlyJPEG = "{{onlyJPEG}}" === "true";
+var jpeg = "{{jpeg}}" === "true";
+var eps = "{{eps}}" === "true";
 var textData = eval('(function() { return {{{textData}}}; })()');
+var docSize = parseInt("{{docSize}}", 10);
 
 // Predefined constants
 var jpegSize = 5000;
-var docSize = 1000;
 
 var hexes = {
     0: 0,
@@ -205,7 +206,7 @@ for (var index in files) {
     var epsName = pathJoin(saveFolder, fileName + ".eps");
     var jpegName = pathJoin(saveFolder, fileName + ".jpeg");
 
-    if (!onlyJPEG) {
+    if (eps) {
         // Save eps file
         var saveOptions = new EPSSaveOptions();
         saveOptions.preview = EPSPreview.TRANSPARENTCOLORTIFF;
@@ -217,20 +218,23 @@ for (var index in files) {
         targetDoc.saveAs(new File(epsName), saveOptions);
     }
 
-    // Save jpeg file
-    var exportOptions = new ExportOptionsJPEG();
-    exportOptions.antiAliasing = false;
-    exportOptions.optimization = true;
-    exportOptions.qualitySetting = 100;
-    exportOptions.horizontalScale = 500;
-    exportOptions.verticalScale = 500;
-    exportOptions.artBoardClipping = true;
+    if (jpeg) {
+        // Save jpeg file
+        var exportOptions = new ExportOptionsJPEG();
+        exportOptions.antiAliasing = false;
+        exportOptions.optimization = true;
+        exportOptions.qualitySetting = 100;
+        exportOptions.horizontalScale = 500;
+        exportOptions.verticalScale = 500;
+        exportOptions.artBoardClipping = true;
 
-    var jpegFile = new File(jpegName);
 
-    targetDoc.exportFile(jpegFile, ExportType.JPEG, exportOptions);
+        var jpegFile = new File(jpegName);
 
-    jpegFile.rename(jpegName);
+        targetDoc.exportFile(jpegFile, ExportType.JPEG, exportOptions);
+
+        jpegFile.rename(jpegName);
+    }
 
     // Remove icon from artboard
     icon.remove();

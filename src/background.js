@@ -16,6 +16,7 @@ import {
     installVueDevtools
 } from "vue-cli-plugin-electron-builder/lib";
 import SystemFonts from "system-font-families";
+import PromiseFtp from "promise-ftp";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -34,6 +35,7 @@ const errorFile = path.resolve(path.join(".", "error.txt"));
 
 // Mediator variables
 let stopKeywording = false;
+let stopUploading = false;
 
 // Standard scheme must be registered before the app is ready
 protocol.registerStandardSchemes(["app"], {
@@ -134,8 +136,10 @@ ipcMain.on("startProcessing", (e, data) => {
         iconSize: data.iconSize,
         color: data.color,
         saveFlipped: data.saveFlipped,
-        onlyJPEG: data.onlyJPEG,
+        jpeg: data.exts[0],
+        eps: data.exts[1],
         textData: JSON.stringify(data.textData),
+        docSize: data.docSize,
 
         saveFolder: saveFolder.replace(/\\/g, "\\\\"),
         progressFile: progressFile.replace(/\\/g, "\\\\"),
@@ -177,8 +181,12 @@ ipcMain.on("startKeywording", async (e, data) => {
     let progress = 0;
     let maxProgress = 0;
 
+    const exts = [];
+    if (data.exts[0]) exts.push(".jpg");
+    if (data.exts[1]) exts.push(".eps");
+
     for (let file of fs.readdirSync(data.iconsFolder)) {
-        if (!file.match(/\.jpe?g$/i)) continue;
+        if (!exts.includes(path.extname(file))) continue;
 
         const cleaned = file
             .replace(index, "")
@@ -356,6 +364,64 @@ ipcMain.on("startKeywording", async (e, data) => {
 
 ipcMain.on("stopKeywording", () => {
     stopKeywording = true;
+});
+
+ipcMain.on("startUploading", async (e, data) => {
+    stopUploading = false;
+
+    const exts = [];
+    if (data.exts[0]) exts.push(".jpg");
+    if (data.exts[1]) exts.push(".eps");
+
+    const ftp = new PromiseFtp();
+    ftp.connect({
+        host: data.ftp.host,
+        user: data.ftp.login,
+        password: data.ftp.password
+    })
+        .then(() => {
+            const files = fs
+                .readdirSync(data.iconsFolder)
+                .filter(file => exts.includes(path.extname(file)))
+                .sort(
+                    (a, b) =>
+                        (path.extname(a) === ".jpg") -
+                        (path.extname(b) === ".jpg")
+                );
+
+            if (files.length === 0) {
+                win.send("uploaderProgressChanged", {
+                    progress: 0,
+                    maxProgress: 0
+                });
+
+                return;
+            }
+
+            files.forEach(async (file, index, array) => {
+                if (!exts.includes(path.extname(file))) return;
+                if (stopUploading) return;
+                await ftp.put(path.join(data.iconsFolder, file), file);
+                win.send("uploaderProgressChanged", {
+                    progress: index + 1,
+                    maxProgress: array.length
+                });
+            });
+        })
+        .catch(e => {
+            win.send("uploadError", PromiseFtp.ERROR_CODES[e.code]);
+            win.send("uploaderProgressChanged", {
+                progress: 0,
+                maxProgress: 0
+            });
+        })
+        .then(() => {
+            return ftp.end();
+        });
+});
+
+ipcMain.on("stopUploading", () => {
+    stopUploading = true;
 });
 
 ipcMain.on("fonts", () => {

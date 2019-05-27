@@ -5,59 +5,76 @@ import Swatches from "vue-swatches";
 import "vue-swatches/dist/vue-swatches.min.css";
 import storage from "electron-json-storage";
 import { ipcRenderer } from "electron";
+import SingleOrBoth from "../components/SingleOrBoth";
 
 const { dialog } = require("electron").remote;
 
 export default {
     components: {
         "chrome-picker": Chrome,
-        swatches: Swatches
+        swatches: Swatches,
+        "single-or-both": SingleOrBoth
     },
     data() {
         return {
             startKeywordingAfterProcessing: false,
+            startUploadingAfterKeywording: false,
             iconizatorIconsFolder: undefined,
-            svgTextSelectedColor: undefined,
             keyworderIconsFolder: undefined,
+            svgTextSelectedColor: undefined,
+            uploaderIconsFolder: undefined,
             iconizatorIsProcessing: false,
             keyworderIsProcessing: false,
+            iconizatorExts: [true, true],
+            keyworderExts: [true, true],
             svgTextFontStyle: "Regular",
+            uploaderIsProcessing: false,
+            uploaderExts: [true, true],
             iconizatorIconsFolders: [],
             processedFolder: undefined,
             color: { hex: "#000000" },
-            iconizatorMaxProgress: 0,
             selectedColor: undefined,
+            iconizatorMaxProgress: 0,
             keyworderMaxProgress: 0,
-            svgTextFont: undefined,
-            illustrator: undefined,
             svgTextUpperCase: true,
-            background: undefined,
-            iconizatorProgress: 0,
-            keywordingStop: false,
+            illustrator: undefined,
+            svgTextFont: undefined,
+            uploaderMaxProgress: 0,
             processingStop: false,
+            keywordingStop: false,
+            iconizatorProgress: 0,
+            background: undefined,
+            ftpAccount: undefined,
+            splitterRegex: /;|,/,
+            uploadingStop: false,
             cleansingStop: false,
             keyworderProgress: 0,
-            splitterRegex: /;|,/,
+            uploaderMessage: "",
+            uploaderProgress: 0,
             newTitle: undefined,
-            useWhiteList: true,
+            documentSize: 2000,
+            spacesRegex: /\s+/,
             addRequireds: true,
             popoverShow: false,
             saveFlipped: false,
-            spacesRegex: /\s+/,
-            documentSize: 1000,
+            useWhiteList: true,
             svgTextOffset: 50,
             title: undefined,
             svgTextSize: 100,
             titleOnly: false,
-            backgrounds: [],
             svgTextBBox: {},
-            onlyJPEG: false,
+            backgrounds: [],
+            ftpPassword: "",
+            ftpAccounts: {},
             useText: false,
-            iconSize: 800,
             blacklist: "",
             requireds: "",
+            iconSize: 800,
             swatches: [],
+            ftpLogin: "",
             svgSize: 300,
+            ftpHost: "",
+            ftpName: "",
             titles: [],
             fonts: []
         };
@@ -69,6 +86,9 @@ export default {
         svgText() {
             return this.svgTextUpperCase ? "TEXT" : "text";
         },
+        uploaderIsReady() {
+            return this.uploaderIconsFolder !== undefined && this.ftpAccount;
+        },
         iconizatorIsReady() {
             return (
                 this.iconSizeIsCorrect &&
@@ -76,6 +96,16 @@ export default {
                 this.illustrator !== undefined &&
                 this.processedFolder !== undefined &&
                 this.iconizatorIconsFolder !== undefined
+            );
+        },
+        ftpFormIsUpdate() {
+            return !!this.ftpAccounts[this.ftpName];
+        },
+        ftpFormIsCorrect() {
+            return (
+                this.ftpName !== "" &&
+                this.ftpHost !== "" &&
+                this.ftpLogin !== ""
             );
         },
         iconSizeIsCorrect() {
@@ -163,6 +193,27 @@ export default {
                 this.selectedColor = this.color.hex;
             }
         },
+        addOrUpdateFtpAccount() {
+            this.$set(this.ftpAccounts, this.ftpName, {
+                name: this.ftpName,
+                host: this.ftpHost,
+                login: this.ftpLogin,
+                password: this.ftpPassword
+            });
+
+            this.ftpAccount = this.ftpAccounts[this.ftpName];
+        },
+        removeFtpAccount() {
+            if (this.ftpAccount) delete this.ftpAccounts[this.ftpAccount.name];
+            this.ftpAccount = undefined;
+            this.clearFtpForm();
+        },
+        clearFtpForm() {
+            this.ftpName = "";
+            this.ftpHost = "";
+            this.ftpLogin = "";
+            this.ftpPassword = "";
+        },
         switchProcessing(userInit = false) {
             if (!this.iconizatorIsProcessing) {
                 this.iconizatorIsProcessing = true;
@@ -186,7 +237,9 @@ export default {
                               color: this.svgTextSelectedColor || "#000000",
                               upper: this.svgTextUpperCase
                           }
-                        : false
+                        : false,
+                    exts: this.iconizatorExts,
+                    docSize: this.documentSize
                 });
             } else {
                 this.iconizatorIsProcessing = false;
@@ -200,6 +253,9 @@ export default {
             if (!this.keyworderIsProcessing) {
                 this.keyworderIsProcessing = true;
 
+                if (this.startUploadingAfterKeywording)
+                    this.uploaderIconsFolder = this.keyworderIconsFolder;
+
                 ipcRenderer.send("startKeywording", {
                     iconsFolder: this.keyworderIconsFolder,
                     blacklist: this.splitKeywords(this.blacklist),
@@ -208,7 +264,8 @@ export default {
                     useWhiteList: this.useWhiteList,
                     requireds: this.addRequireds
                         ? this.splitKeywords(this.requireds)
-                        : []
+                        : [],
+                    exts: this.keyworderExts
                 });
             } else {
                 this.keyworderIsProcessing = false;
@@ -216,6 +273,29 @@ export default {
                 this.keyworderMaxProgress = 0;
                 this.keywordingStop = false;
                 ipcRenderer.send("stopKeywording");
+            }
+        },
+        switchUploading() {
+            if (!this.uploaderIsProcessing) {
+                this.uploaderIsProcessing = true;
+
+                this.uploaderMessage = "";
+
+                const exts = [];
+                if (this.uploaderJpeg) exts.push(".jpg");
+                if (this.uploaderEps) exts.push(".eps");
+
+                ipcRenderer.send("startUploading", {
+                    iconsFolder: this.uploaderIconsFolder,
+                    ftp: this.ftpAccount,
+                    exts: this.uploaderExts
+                });
+            } else {
+                this.uploaderIsProcessing = false;
+                this.uploaderProgress = 0;
+                this.uploaderMaxProgress = 0;
+                this.uploadingStop = false;
+                ipcRenderer.send("stopUploading");
             }
         },
         openDialog(prop, mode, filters = []) {
@@ -341,6 +421,26 @@ export default {
 
         titles(value) {
             storage.set("titles", value);
+        },
+
+        ftpAccount(value) {
+            if (value) {
+                this.ftpName = value.name;
+                this.ftpHost = value.host;
+                this.ftpLogin = value.login;
+                this.ftpPassword = value.password;
+                storage.set("ftpName", value.name);
+            } else {
+                this.clearFtpForm();
+                storage.set("ftpName", "");
+            }
+        },
+
+        ftpAccounts: {
+            handler(value) {
+                storage.set("ftpAccounts", value);
+            },
+            deep: true
         }
     },
     created() {
@@ -420,6 +520,15 @@ export default {
             }
         });
 
+        storage.get("ftpAccounts", (error, data) => {
+            if (typeof data === "object") this.ftpAccounts = data;
+
+            storage.get("ftpName", (error, name) => {
+                if (typeof name === "string")
+                    this.ftpAccount = this.ftpAccounts[name];
+            });
+        });
+
         storage.get("wordsToCleanse", (error, data) => {
             if (typeof data === "string") this.wordsToCleanse = data;
         });
@@ -465,8 +574,35 @@ export default {
                 this.keywordingStop = true;
                 setTimeout(() => {
                     this.switchKeywording();
+                    if (
+                        this.startUploadingAfterKeywording &&
+                        !this.uploaderIsProcessing &&
+                        this.uploaderIsReady
+                    ) {
+                        this.switchUploading();
+                    }
                 }, 2000);
             }
+        });
+
+        ipcRenderer.on("uploaderProgressChanged", (event, data) => {
+            this.uploaderProgress = data.progress;
+            this.uploaderMaxProgress = data.maxProgress;
+
+            if (
+                this.uploaderIsProcessing &&
+                !this.uploadingStop &&
+                data.progress === data.maxProgress
+            ) {
+                this.uploadingStop = true;
+                setTimeout(() => {
+                    this.switchUploading();
+                }, 2000);
+            }
+        });
+
+        ipcRenderer.on("uploadError", (event, message) => {
+            this.uploaderMessage = message;
         });
 
         ipcRenderer.on("alert", (event, data) => {
