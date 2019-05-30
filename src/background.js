@@ -340,12 +340,23 @@ ipcMain.on("startKeywording", async (e, data) => {
                     keywords[keyword][index]
                 );
 
-                let metaObject = {
-                    Title: title,
-                    Description: title
-                };
+                let metaObject =
+                    path.extname(filePath) === ".eps"
+                        ? {
+                              "iptc:headline": title
+                          }
+                        : {
+                              Title: title,
+                              Description: title
+                          };
 
-                if (!data.titleOnly) metaObject.Keywords = keywordArray;
+                if (!data.titleOnly) {
+                    if (path.extname(filePath) === ".eps") {
+                        metaObject["iptc:Keywords"] = keywordArray;
+                    } else {
+                        metaObject.Keywords = keywordArray;
+                    }
+                }
 
                 ep.writeMetadata(filePath, metaObject, ["overwrite_original"]);
 

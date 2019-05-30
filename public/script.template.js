@@ -209,11 +209,11 @@ for (var index in files) {
     if (eps) {
         // Save eps file
         var saveOptions = new EPSSaveOptions();
-        saveOptions.preview = EPSPreview.TRANSPARENTCOLORTIFF;
+        saveOptions.preview = EPSPreview.None;
         saveOptions.compatibility = Compatibility.ILLUSTRATOR10;
-        saveOptions.embedAllFonts = true;
-        saveOptions.cmykPostScript = true;
-        saveOptions.embedLinkedFiles = true;
+        saveOptions.embedAllFonts = false;
+        saveOptions.cmykPostScript = false;
+        saveOptions.embedLinkedFiles = false;
 
         targetDoc.saveAs(new File(epsName), saveOptions);
     }
